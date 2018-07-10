@@ -3,5 +3,8 @@
         "php": "^7.2",
         "zendframework/zend-diactoros": "^1.8",
         "zendframework/zend-httphandlerrunner": "^1.0"
+    },
+    "psr4": {
+        "ImmediateSolutions\\Shipple\\": "./src"
     }
 }

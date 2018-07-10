@@ -25,53 +25,72 @@ use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
  */
 class Application
 {
-    private $providers = [];
-
-    private $matchers = [];
-
     /**
      * @var ResponseFactoryInterface
      */
     private $mismatchResponseFactory;
 
     /**
+     * @var ProviderInterface[]
+     */
+    private $providers = [];
+
+    /**
+     * @var MatcherInterface[]
+     */
+    private $matchers = [];
+
+    /**
      * @var LoaderInterface
      */
     private $loader;
+
 
     public function __construct(LoaderInterface $loader)
     {
         $this->loader = $loader;
 
-        $this->mismatchResponseFactory = new Error404ResponseFactory();
+        $this->addProvider('date', new DateProvider());
+        $this->addProvider('datetime', new DateTimeProvider());
+        $this->addProvider('uuid', new UuidProvider());
+        $this->addProvider('rand_text', new RandomTextProvider());
+        $this->addProvider('rand_number', new RandomNumberProvider());
 
-        $this->providers['date'] = new DateProvider();
-        $this->providers['datetime'] = new DateTimeProvider();
-        $this->providers['uuid'] = new UuidProvider();
-        $this->providers['rand_text'] = new RandomTextProvider();
-        $this->providers['rand_number'] = new RandomNumberProvider();
+        $this->addMatcher('type', new TypeMatcher());
+        $this->addMatcher('choice', new ChoiceMatcher());
+        $this->addMatcher('pattern', new PatternMatcher());
 
-
-        $this->matchers['type'] = new TypeMatcher();
-        $this->matchers['choice'] = new ChoiceMatcher();
-        $this->matchers['pattern'] = new PatternMatcher();
+        $this->setMismatchResponseFactory(new Error404ResponseFactory());
     }
 
-    public function setProviders(array $providers): void
+
+    /**
+     * @var ProviderInterface[] $providers
+     */
+    public function setProviders(array $providers)
     {
         $this->providers = $providers;
     }
 
-    public function setMatchers(array $matchers): void
-    {
-        $this->matchers = $matchers;
-    }
-
+    /**
+     * @return ProviderInterface[]
+     */
     public function getProviders(): array
     {
         return $this->providers;
     }
 
+    /**
+     * @var MatcherInterface[] $matchers
+     */
+    public function setMatchers(array $matchers)
+    {
+        $this->matchers = $matchers;
+    }
+
+    /**
+     * @return MatcherInterface[]
+     */
     public function getMatchers(): array
     {
         return $this->matchers;
@@ -87,8 +106,14 @@ class Application
         $this->matchers[$name] = $matcher;
     }
 
-    public function setMismatchResponseFactory(ResponseFactoryInterface $responseFactory) {
+    public function setMismatchResponseFactory(ResponseFactoryInterface $responseFactory)
+    {
         $this->mismatchResponseFactory = $responseFactory;
+    }
+
+    public function getMismatchResponseFactory(): ResponseFactoryInterface
+    {
+        return $this->mismatchResponseFactory;
     }
 
     public function run(RequestInterface $request = null): void
@@ -108,10 +133,10 @@ class Application
 
     private function match(RequestInterface $request): array
     {
-        $comparator = new MatchComparator();
+        $comparator = new MatchComparator(new Interpreter($this->getProviders(), $this->getMatchers()));
 
         foreach ($this->loader->load() as $stub) {
-            if ($comparator->compare($stub['match'], $request)) {
+            if ($comparator->compare($stub['match'], new Context($request))) {
                 return $stub;
             }
         }

@@ -1,7 +1,8 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparators;
 
-use Psr\Http\Message\RequestInterface;
+use ImmediateSolutions\Shipple\Context;
+use ImmediateSolutions\Shipple\Interpreter;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -13,22 +14,21 @@ class MatchComparator implements ComparatorInterface
      */
     private $comparators = [];
 
-    public function __construct()
+    public function __construct(Interpreter $interpreter)
     {
         $this->comparators = [
-            new UrlComparator(),
-            new MethodComparator(),
-            new DataComparator(),
-            new PartialComparator(),
-            new UrlComparator()
+            new PathComparator($interpreter),
+            new MethodComparator($interpreter),
+            new DataComparator($interpreter),
+            new PartialComparator($interpreter),
+            new PathComparator($interpreter)
         ];
     }
 
-
-    public function compare(array $match, RequestInterface $request): bool
+    public function compare(array $match, Context $context): bool
     {
         foreach ($this->comparators as $comparator) {
-            if (!$comparator->compare($match, $request)) {
+            if (!$comparator->compare($match, $context)) {
                 return false;
             }
         }
