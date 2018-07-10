@@ -1,15 +1,22 @@
 <?php
 namespace ImmediateSolutions\Shipple;
 
+use ImmediateSolutions\Shipple\Comparators\MatchComparator;
+use ImmediateSolutions\Shipple\Loaders\LoaderInterface;
 use ImmediateSolutions\Shipple\Matchers\ChoiceMatcher;
+use ImmediateSolutions\Shipple\Matchers\MatcherInterface;
 use ImmediateSolutions\Shipple\Matchers\PatternMatcher;
 use ImmediateSolutions\Shipple\Matchers\TypeMatcher;
 use ImmediateSolutions\Shipple\Providers\DateProvider;
 use ImmediateSolutions\Shipple\Providers\DateTimeProvider;
+use ImmediateSolutions\Shipple\Providers\ProviderInterface;
 use ImmediateSolutions\Shipple\Providers\RandomNumberProvider;
 use ImmediateSolutions\Shipple\Providers\RandomTextProvider;
 use ImmediateSolutions\Shipple\Providers\UuidProvider;
-use Zend\Diactoros\Response\JsonResponse;
+use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
+use ImmediateSolutions\Shipple\Response\ResponseFactoryInterface;
+use ImmediateSolutions\Shipple\Response\StubResponseFactory;
+use Psr\Http\Message\RequestInterface;
 use Zend\Diactoros\ServerRequestFactory;
 use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
 
@@ -22,8 +29,22 @@ class Application
 
     private $matchers = [];
 
-    public function __construct()
+    /**
+     * @var ResponseFactoryInterface
+     */
+    private $mismatchResponseFactory;
+
+    /**
+     * @var LoaderInterface
+     */
+    private $loader;
+
+    public function __construct(LoaderInterface $loader)
     {
+        $this->loader = $loader;
+
+        $this->mismatchResponseFactory = new Error404ResponseFactory();
+
         $this->providers['date'] = new DateProvider();
         $this->providers['datetime'] = new DateTimeProvider();
         $this->providers['uuid'] = new UuidProvider();
@@ -66,12 +87,35 @@ class Application
         $this->matchers[$name] = $matcher;
     }
 
-    public function run(): void
-    {
-        $request = ServerRequestFactory::fromGlobals();
+    public function setMismatchResponseFactory(ResponseFactoryInterface $responseFactory) {
+        $this->mismatchResponseFactory = $responseFactory;
+    }
 
-        $response = new JsonResponse([]);
+    public function run(RequestInterface $request = null): void
+    {
+        $request = $request ?: ServerRequestFactory::fromGlobals();
+
+        $stub = $this->match($request);
+
+        if (!$stub) {
+            $response = $this->mismatchResponseFactory->create();
+        } else {
+            $response = (new StubResponseFactory($stub))->create();
+        }
 
         (new SapiEmitter())->emit($response);
+    }
+
+    private function match(RequestInterface $request): array
+    {
+        $comparator = new MatchComparator();
+
+        foreach ($this->loader->load() as $stub) {
+            if ($comparator->compare($stub['match'], $request)) {
+                return $stub;
+            }
+        }
+
+        return null;
     }
 }

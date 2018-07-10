@@ -1,5 +1,5 @@
 <?php
-namespace ImmediateSolutions\Shipple;
+namespace ImmediateSolutions\Shipple\Providers;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>

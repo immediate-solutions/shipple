@@ -1,5 +1,5 @@
 <?php
-namespace ImmediateSolutions\Shipple;
+namespace ImmediateSolutions\Shipple\Matchers;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
