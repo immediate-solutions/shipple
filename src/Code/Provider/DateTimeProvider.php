@@ -9,7 +9,6 @@ use ImmediateSolutions\Shipple\Code\Context;
  */
 class DateTimeProvider implements ProviderInterface
 {
-
     /**
      * @param Arguments $arguments
      * @param Context $context
@@ -17,6 +16,13 @@ class DateTimeProvider implements ProviderInterface
      */
     public function provide(Arguments $arguments, Context $context)
     {
-        // TODO: Implement provide() method.
+        $qualifier = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['qualifier']);
+        $format = $arguments->getOrdered()[1] ?? ($arguments->getNamed()['format']);
+
+        if ($format === null || $qualifier === null) {
+            throw new \InvalidArgumentException();
+        }
+
+        return (new \DateTime($qualifier))->format($format);
     }
 }

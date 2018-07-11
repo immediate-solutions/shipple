@@ -2,7 +2,8 @@
     "require": {
         "php": "^7.2",
         "zendframework/zend-diactoros": "^1.8",
-        "zendframework/zend-httphandlerrunner": "^1.0"
+        "zendframework/zend-httphandlerrunner": "^1.0",
+        "fzaninotto/faker": "^1.7"
     },
     "autoload": {
         "psr-4": {

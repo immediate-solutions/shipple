@@ -7,7 +7,7 @@ use ImmediateSolutions\Shipple\Code\Context;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class UuidProvider implements ProviderInterface
+class TextProvider implements ProviderInterface
 {
     /**
      * @var FakerProvider
@@ -26,7 +26,7 @@ class UuidProvider implements ProviderInterface
      */
     public function provide(Arguments $arguments, Context $context)
     {
-        $ordered = ['uuid'];
+        $ordered = ['text'];
         $named = [];
 
         if (isset($arguments->getNamed()['many'])) {

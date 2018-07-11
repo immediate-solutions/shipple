@@ -6,10 +6,15 @@
 require_once  __DIR__ . '/vendor/autoload.php';
 
 
-$path = "/users/documents/{{ type: '\{\{ \' 99 \}\}', 102, 10.0, true, '\{\{ \' 99 \}\}', null, false }}/active/{{ type: 'string'}}";
+$template = "{{ text }}";
 
 
-$interpreter = new \ImmediateSolutions\Shipple\Code\Interpreter([], []);
+$interpreter = new \ImmediateSolutions\Shipple\Code\Interpreter([
+    'text' => new \ImmediateSolutions\Shipple\Code\Provider\TextProvider()
+], []);
 
-$interpreter->interpret($path);
+
+$result = $interpreter->interpret($template);
+
+print_r($result);
 

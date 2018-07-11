@@ -86,7 +86,7 @@ class Interpreter
                         return false;
                     }
 
-                } catch (\InvalidArgumentException $ex) {
+                } catch (\Throwable $ex) {
                     return false;
                 }
             }
@@ -128,12 +128,16 @@ class Interpreter
                         $parsedCode['arguments']['ordered'],
                         $parsedCode['arguments']['named']
                     ), $context);
-                } catch (\InvalidArgumentException $ex) {
+                } catch (\Throwable $ex) {
                     continue ;
                 }
 
                 if ($context->onlyCode()) {
                     return $value;
+                }
+
+                if (!is_string($value) && !is_int($value) && !is_float($value)) {
+                    continue ;
                 }
 
                 $template = str_replace($code, $value, $template);

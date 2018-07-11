@@ -24,7 +24,9 @@ class TypeMatcher implements MatcherInterface
     {
         $type = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['name'] ?? null);
 
-        if (!in_array($type, [self::TYPE_BOOL, self::TYPE_NUMBER, self::TYPE_INT, self::TYPE_TEXT])
+        $availableTypes = [self::TYPE_BOOL, self::TYPE_NUMBER, self::TYPE_INT, self::TYPE_TEXT];
+
+        if (!in_array($type, $availableTypes)
             || !$context->onlyCode()) {
             throw new \InvalidArgumentException();
         }

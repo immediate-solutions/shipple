@@ -2,6 +2,7 @@
 namespace ImmediateSolutions\Shipple;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
+use ImmediateSolutions\Shipple\Code\Provider\FakerProvider;
 use ImmediateSolutions\Shipple\Comparator\MatchComparator;
 use ImmediateSolutions\Shipple\Loader\LoaderInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
@@ -11,8 +12,8 @@ use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
 use ImmediateSolutions\Shipple\Code\Provider\DateProvider;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
-use ImmediateSolutions\Shipple\Code\Provider\RandomNumberProvider;
-use ImmediateSolutions\Shipple\Code\Provider\RandomTextProvider;
+use ImmediateSolutions\Shipple\Code\Provider\NumberProvider;
+use ImmediateSolutions\Shipple\Code\Provider\TextProvider;
 use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
 use ImmediateSolutions\Shipple\Response\ResponseFactoryInterface;
@@ -51,11 +52,11 @@ class Application
     {
         $this->loader = $loader;
 
-        $this->addProvider('date', new DateProvider());
         $this->addProvider('datetime', new DateTimeProvider());
         $this->addProvider('uuid', new UuidProvider());
-        $this->addProvider('rand_text', new RandomTextProvider());
-        $this->addProvider('rand_number', new RandomNumberProvider());
+        $this->addProvider('text', new TextProvider());
+        $this->addProvider('number', new NumberProvider());
+        $this->addProvider('faker', new FakerProvider());
 
         $this->addMatcher('type', new TypeMatcher());
         $this->addMatcher('choice', new ChoiceMatcher());
