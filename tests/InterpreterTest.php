@@ -5,6 +5,7 @@ use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
 use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\ConcatProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\DummyProvider;
+use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\IdProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\ProductProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\SumProvider;
 use PHPUnit\Framework\Assert;
@@ -21,7 +22,8 @@ class InterpreterTest extends TestCase
             'sum' => new SumProvider(),
             'product' => new ProductProvider(),
             'dummy' => new DummyProvider(),
-            'concat' => new ConcatProvider()
+            'concat' => new ConcatProvider(),
+            'id' => new IdProvider()
         ], []);
 
         $result = $interpreter->interpret(2);
@@ -137,6 +139,23 @@ class InterpreterTest extends TestCase
 
 
         Assert::assertEquals($result, "Я что-то сделал и не {{ и вообще й \n\n13\n\n and ăpнафигмне Ă îș { ' that's всеlîș  вот что еще нафигмне Ă îș { ' that's все решенно și нет");
+
+
+        $result = $interpreter->interpret('this is my "{{ id }}" don\'t miss it!');
+
+        Assert::assertEquals('this is my "unique_text" don\'t miss it!', $result);
+
+        $result = $interpreter->interpret('this is my "{{ id: }}" don\'t miss it!');
+
+        Assert::assertEquals('this is my "unique_text" don\'t miss it!', $result);
+
+        $result = $interpreter->interpret('this is my "{{ id 23, 44, \'hello\' }}" don\'t miss it!');
+
+        Assert::assertEquals('this is my "{{ id 23, 44, \'hello\' }}" don\'t miss it!', $result);
+
+        $result = $interpreter->interpret('this is my "{{ id }" don\'t miss it!');
+
+        Assert::assertEquals('this is my "{{ id }" don\'t miss it!', $result);
     }
 
     public function testMatch()

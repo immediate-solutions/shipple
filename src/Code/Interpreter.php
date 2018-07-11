@@ -206,7 +206,7 @@ class Interpreter
     {
         $result = [];
 
-        preg_match('/^{{ *([a-zA-Z_][a-zA-Z0-9_]*):/', $code, $result);
+        preg_match('/^{{ *([a-zA-Z_][a-zA-Z0-9_]*)(?::| *}})/', $code, $result);
 
         if (count($result) !== 2) {
             return null;

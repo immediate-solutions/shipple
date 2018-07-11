@@ -1,15 +1,15 @@
 <?php
-namespace ImmediateSolutions\Shipple\Code\Provider;
+namespace ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
 use ImmediateSolutions\Shipple\Code\Context;
+use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class DateTimeProvider implements ProviderInterface
+class IdProvider implements ProviderInterface
 {
-
     /**
      * @param Arguments $arguments
      * @param Context $context
@@ -17,6 +17,6 @@ class DateTimeProvider implements ProviderInterface
      */
     public function provide(Arguments $arguments, Context $context)
     {
-        // TODO: Implement provide() method.
+        return 'unique_text';
     }
 }

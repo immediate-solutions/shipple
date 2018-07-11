@@ -7,7 +7,7 @@ use ImmediateSolutions\Shipple\Code\Context;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class PatternMatcher implements MatcherInterface
+class DateTimeMatcher implements MatcherInterface
 {
     /**
      * @param mixed $value
@@ -17,14 +17,12 @@ class PatternMatcher implements MatcherInterface
      */
     public function match($value, Arguments $arguments, Context $context): bool
     {
-        $pattern = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['pattern'] ?? null);
+        $format = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['format'] ?? null);
 
-        if ($pattern === null) {
+        if ($format == null) {
             throw new \InvalidArgumentException();
         }
 
-        $pattern = '/' . $pattern . '/';
-
-        return preg_match($pattern, $value) > 0;
+        return \DateTime::createFromFormat($format, $value) !== false;
     }
 }
