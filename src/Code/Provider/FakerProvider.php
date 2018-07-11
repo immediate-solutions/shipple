@@ -35,44 +35,11 @@ abstract class FakerProvider implements ProviderInterface
             throw new \InvalidArgumentException();
         }
 
-        $unique = $arguments->getNamed()['unique'] ?? false;
-
-        if (!is_bool($unique)) {
-            throw new \InvalidArgumentException();
-        }
-
-        $uniqueMaxRetries = $arguments->getNamed()['unique_max_retries'] ?? 10000;
-
-        if (!is_int($uniqueMaxRetries)) {
-            throw new \InvalidArgumentException();
-        }
-
-        $optional = $arguments->getNamed()['optional'] ?? false;
-
-        if (!is_bool($optional)) {
-            throw new \InvalidArgumentException();
-        }
-
-        $optionalWeight = $arguments->getNamed()['optional_weight'] ?? 0.5;
-
-        if (!is_int($optionalWeight) && !is_float($optionalWeight)) {
-            throw new \InvalidArgumentException();
-        }
-
-        $optionalDefault = $arguments->getNamed()['optional_default'] ?? null;
-
         $normalizedArguments = $this->normalize($arguments);
 
         if ($many !== null) {
+
             $result = [];
-
-            if ($unique) {
-                $this->faker->unique(true, $uniqueMaxRetries);
-            }
-
-            if ($optional) {
-                $this->faker->optional($optionalWeight, $optionalDefault);
-            }
 
             for ($i = 0; $i < $many; $i ++) {
                 $result[] = $this->generate($this->faker, $normalizedArguments);
