@@ -3,13 +3,14 @@ namespace ImmediateSolutions\Shipple\Code\Provider;
 
 use Faker\Factory as FakerFactory;
 use Faker\Generator as Faker;
+use Faker\Generator;
 use ImmediateSolutions\Shipple\Code\Arguments;
 use ImmediateSolutions\Shipple\Code\Context;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class FakerProvider implements ProviderInterface
+abstract class FakerProvider implements ProviderInterface
 {
     /**
      * @var Faker
@@ -28,12 +29,6 @@ class FakerProvider implements ProviderInterface
      */
     public function provide(Arguments $arguments, Context $context)
     {
-        $accessor = $arguments->getOrdered()[0] ?? null;
-
-        if ($accessor === null || !is_string($accessor) || trim($accessor) === '') {
-            throw new \InvalidArgumentException();
-        }
-
         $many = $arguments->getNamed()['many'] ?? null;
 
         if (!is_int($many) && $many !== null) {
@@ -41,39 +36,55 @@ class FakerProvider implements ProviderInterface
         }
 
         $unique = $arguments->getNamed()['unique'] ?? false;
-        $uniqueMaxRetries = $arguments->getNamed()['unique_max_retries'] ?? 1000;
+
+        if (!is_bool($unique)) {
+            throw new \InvalidArgumentException();
+        }
+
+        $uniqueMaxRetries = $arguments->getNamed()['unique_max_retries'] ?? 10000;
+
+        if (!is_int($uniqueMaxRetries)) {
+            throw new \InvalidArgumentException();
+        }
 
         $optional = $arguments->getNamed()['optional'] ?? false;
+
+        if (!is_bool($optional)) {
+            throw new \InvalidArgumentException();
+        }
+
         $optionalWeight = $arguments->getNamed()['optional_weight'] ?? 0.5;
+
+        if (!is_int($optionalWeight) && !is_float($optionalWeight)) {
+            throw new \InvalidArgumentException();
+        }
+
         $optionalDefault = $arguments->getNamed()['optional_default'] ?? null;
 
-        $parameters = $arguments->getOrdered();
-
-        unset($parameters[0]);
-
-        $parameters = array_values($parameters);
+        $normalizedArguments = $this->normalize($arguments);
 
         if ($many !== null) {
-
-            $faker = $this->faker;
+            $result = [];
 
             if ($unique) {
-                $faker = $faker->unique(true, $uniqueMaxRetries);
+                $this->faker->unique(true, $uniqueMaxRetries);
             }
 
             if ($optional) {
-                $faker->optional($optionalWeight, $optionalDefault);
+                $this->faker->optional($optionalWeight, $optionalDefault);
             }
 
-            $result = [];
-
-            for ($i = 0; $i < $many; $i ++ ){
-                $result[] = call_user_func_array([$faker, $accessor], $parameters);
+            for ($i = 0; $i < $many; $i ++) {
+                $result[] = $this->generate($this->faker, $normalizedArguments);
             }
 
             return $result;
         }
 
-        return call_user_func_array([$this->faker, $accessor], $parameters);
+        return $this->generate($this->faker, $normalizedArguments);
     }
+
+    abstract protected function normalize(Arguments $arguments): array;
+
+    abstract protected function generate(Generator $generator, array $arguments);
 }

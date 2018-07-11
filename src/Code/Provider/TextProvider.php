@@ -1,38 +1,27 @@
 <?php
 namespace ImmediateSolutions\Shipple\Code\Provider;
 
+use Faker\Generator;
 use ImmediateSolutions\Shipple\Code\Arguments;
-use ImmediateSolutions\Shipple\Code\Context;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class TextProvider implements ProviderInterface
+class TextProvider extends FakerProvider
 {
-    /**
-     * @var FakerProvider
-     */
-    private $fakerProvider;
-
-    public function __construct()
+    protected function normalize(Arguments $arguments): array
     {
-        $this->fakerProvider = new FakerProvider();
-    }
+        $size = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['size'] ?? 100);
 
-    /**
-     * @param Arguments $arguments
-     * @param Context $context
-     * @return mixed
-     */
-    public function provide(Arguments $arguments, Context $context)
-    {
-        $ordered = ['text'];
-        $named = [];
-
-        if (isset($arguments->getNamed()['many'])) {
-            $named['many'] = $arguments->getNamed()['many'];
+        if (!is_int($size)){
+            throw new \InvalidArgumentException();
         }
 
-        return $this->fakerProvider->provide(new Arguments($ordered, $named), $context);
+        return [$size];
+    }
+
+    protected function generate(Generator $generator, array $arguments)
+    {
+        return call_user_func_array([$generator, 'text'], $arguments);
     }
 }

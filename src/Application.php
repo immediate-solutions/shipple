@@ -56,7 +56,6 @@ class Application
         $this->addProvider('uuid', new UuidProvider());
         $this->addProvider('text', new TextProvider());
         $this->addProvider('number', new NumberProvider());
-        $this->addProvider('faker', new FakerProvider());
 
         $this->addMatcher('type', new TypeMatcher());
         $this->addMatcher('choice', new ChoiceMatcher());

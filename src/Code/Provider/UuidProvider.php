@@ -1,38 +1,22 @@
 <?php
 namespace ImmediateSolutions\Shipple\Code\Provider;
 
+use Faker\Generator;
 use ImmediateSolutions\Shipple\Code\Arguments;
-use ImmediateSolutions\Shipple\Code\Context;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class UuidProvider implements ProviderInterface
+class UuidProvider extends FakerProvider
 {
-    /**
-     * @var FakerProvider
-     */
-    private $fakerProvider;
 
-    public function __construct()
+    protected function normalize(Arguments $arguments): array
     {
-        $this->fakerProvider = new FakerProvider();
+        return [];
     }
 
-    /**
-     * @param Arguments $arguments
-     * @param Context $context
-     * @return mixed
-     */
-    public function provide(Arguments $arguments, Context $context)
+    protected function generate(Generator $generator, array $arguments)
     {
-        $ordered = ['uuid'];
-        $named = [];
-
-        if (isset($arguments->getNamed()['many'])) {
-            $named['many'] = $arguments->getNamed()['many'];
-        }
-
-        return $this->fakerProvider->provide(new Arguments($ordered, $named), $context);
+        return call_user_func_array([$generator, 'uuid'], $arguments);
     }
 }
