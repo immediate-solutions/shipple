@@ -9,7 +9,6 @@ use ImmediateSolutions\Shipple\Code\Arguments;
  */
 class UuidProvider extends FakerProvider
 {
-
     protected function normalize(Arguments $arguments): array
     {
         return [];

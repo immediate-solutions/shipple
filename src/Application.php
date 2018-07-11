@@ -2,14 +2,12 @@
 namespace ImmediateSolutions\Shipple;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
-use ImmediateSolutions\Shipple\Code\Provider\FakerProvider;
 use ImmediateSolutions\Shipple\Comparator\MatchComparator;
 use ImmediateSolutions\Shipple\Loader\LoaderInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\MatcherInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\PatternMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
-use ImmediateSolutions\Shipple\Code\Provider\DateProvider;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 use ImmediateSolutions\Shipple\Code\Provider\NumberProvider;
