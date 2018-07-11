@@ -1,5 +1,5 @@
 <?php
-namespace ImmediateSolutions\Shipple\Comparators;
+namespace ImmediateSolutions\Shipple\Comparator;
 
 use ImmediateSolutions\Shipple\Context;
 

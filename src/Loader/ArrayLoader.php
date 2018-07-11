@@ -1,5 +1,5 @@
 <?php
-namespace ImmediateSolutions\Shipple\Loaders;
+namespace ImmediateSolutions\Shipple\Loader;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>

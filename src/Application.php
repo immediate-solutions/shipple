@@ -1,18 +1,18 @@
 <?php
 namespace ImmediateSolutions\Shipple;
 
-use ImmediateSolutions\Shipple\Comparators\MatchComparator;
-use ImmediateSolutions\Shipple\Loaders\LoaderInterface;
-use ImmediateSolutions\Shipple\Matchers\ChoiceMatcher;
-use ImmediateSolutions\Shipple\Matchers\MatcherInterface;
-use ImmediateSolutions\Shipple\Matchers\PatternMatcher;
-use ImmediateSolutions\Shipple\Matchers\TypeMatcher;
-use ImmediateSolutions\Shipple\Providers\DateProvider;
-use ImmediateSolutions\Shipple\Providers\DateTimeProvider;
-use ImmediateSolutions\Shipple\Providers\ProviderInterface;
-use ImmediateSolutions\Shipple\Providers\RandomNumberProvider;
-use ImmediateSolutions\Shipple\Providers\RandomTextProvider;
-use ImmediateSolutions\Shipple\Providers\UuidProvider;
+use ImmediateSolutions\Shipple\Comparator\MatchComparator;
+use ImmediateSolutions\Shipple\Loader\LoaderInterface;
+use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\MatcherInterface;
+use ImmediateSolutions\Shipple\Code\Matcher\PatternMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
+use ImmediateSolutions\Shipple\Code\Provider\DateProvider;
+use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
+use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
+use ImmediateSolutions\Shipple\Code\Provider\RandomNumberProvider;
+use ImmediateSolutions\Shipple\Code\Provider\RandomTextProvider;
+use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
 use ImmediateSolutions\Shipple\Response\ResponseFactoryInterface;
 use ImmediateSolutions\Shipple\Response\StubResponseFactory;
