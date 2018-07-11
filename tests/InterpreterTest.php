@@ -1,10 +1,12 @@
 <?php
 namespace ImmediateSolutions\Shipple\Tests;
 
-use ImmediateSolutions\Shipple\Interpreter;
-use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Providers\DummyProvider;
-use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Providers\ProductProvider;
-use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Providers\SumProvider;
+use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
+use ImmediateSolutions\Shipple\Code\Interpreter;
+use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\ConcatProvider;
+use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\DummyProvider;
+use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\ProductProvider;
+use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\SumProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +20,8 @@ class InterpreterTest extends TestCase
         $interpreter = new Interpreter([
             'sum' => new SumProvider(),
             'product' => new ProductProvider(),
-            'dummy' => new DummyProvider()
+            'dummy' => new DummyProvider(),
+            'concat' => new ConcatProvider()
         ], []);
 
         $result = $interpreter->interpret(2);
@@ -30,6 +33,10 @@ class InterpreterTest extends TestCase
 
         Assert::assertEquals(30, $result);
         Assert::assertTrue(is_int($result));
+
+        $result = $interpreter->interpret('some text to test !@#!%%@^^#%$%$& ()..,');
+
+        Assert::assertEquals('some text to test !@#!%%@^^#%$%$& ()..,', $result);
 
         $result = $interpreter->interpret('{{ sum: aaa, 20 }}');
 
@@ -120,5 +127,70 @@ class InterpreterTest extends TestCase
         $result = $interpreter->interpret('this is \{\{ \'{{dummy:\'\\\'\{\{\'}}\'');
 
         Assert::assertEquals('this is {{ \'\'{{\'', $result);
+
+        $result = $interpreter->interpret("some text \\\{\\\{ {{concat:'\{\{ 99 \' \}\}','b', 'false', 'null', delimiter='+'}} and this \\\}\\\} do this {{concat: '', '\{\{', 'foo', '\}\}'}}  the end");
+
+        Assert::assertEquals("some text \{\{ {{ 99 ' }}+b+false+null and this \}\} do this {{foo}}  the end", $result);
+
+        $result = $interpreter->interpret(
+            "Я что-то сделал и не \{\{ и вообще й \n\n{{ sum: 10, 3 }}\n\n and ăp{{ concat: 'нафиг', 'мне Ă îș \{ \' that\'s все' }}lîș  вот что еще {{ concat: 'нафиг', 'мне Ă îș \{ \' that\'s все' }} решенно și нет");
+
+
+        Assert::assertEquals($result, "Я что-то сделал и не {{ и вообще й \n\n13\n\n and ăpнафигмне Ă îș { ' that's всеlîș  вот что еще нафигмне Ă îș { ' that's все решенно și нет");
+    }
+
+    public function testMatch()
+    {
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+        ]);
+
+        $result = $interpreter->match('what hey see that {{ choice: true }} hey this', 'what hey that hey this');
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match('what hey see that {{ choice: \'a\', \'b\', \'c\' }} hey this', 'what hey see that b hey this');
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match('what hey see that {{ choice: \'a\', \'b\', \'c\' }} hey this', 'what hey see that x hey this');
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match('{{ choice: \'true\', false, 0, 1 }}', true);
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match('{{ choice: false, null, true }}', true);
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(
+            'what hey see that {{ choice: \'a\', \'b\', \'c\' }} hey this and that is {{ choice: 1, 3, 4 }}',
+            'what hey see that a hey this and that is 4');
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match('/users/documents/12/active', '/users/documents/14/active');
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match('/users/documents/12/active', '/users/documents/12/active');
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(
+            "something {{ choice: '\\\}\\\}\'', '\\\}\\\}' , '\\\{\\\{' }} test done and '{{ choice: 'yes', 'no' }}' or {{ choice: '\\\{\\\{ \\ \\\}\\\}', '?', ';'}}",
+            "something \}\}' test done and 'yes' or \{\{ \\ \}\}");
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(10, 10);
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(true, false);
+
+        Assert::assertFalse($result);
     }
 }

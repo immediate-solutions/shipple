@@ -1,6 +1,7 @@
 <?php
 namespace ImmediateSolutions\Shipple;
 
+use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Comparator\MatchComparator;
 use ImmediateSolutions\Shipple\Loader\LoaderInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
@@ -136,7 +137,7 @@ class Application
         $comparator = new MatchComparator(new Interpreter($this->getProviders(), $this->getMatchers()));
 
         foreach ($this->loader->load() as $stub) {
-            if ($comparator->compare($stub['match'], new Context($request))) {
+            if ($comparator->compare($stub['match'], new Request($request))) {
                 return $stub;
             }
         }

@@ -6,7 +6,7 @@ use Psr\Http\Message\RequestInterface;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class Context
+class Request
 {
     /**
      * @var RequestInterface

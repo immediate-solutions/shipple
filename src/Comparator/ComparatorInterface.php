@@ -1,12 +1,12 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparator;
 
-use ImmediateSolutions\Shipple\Context;
+use ImmediateSolutions\Shipple\Request;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
 interface ComparatorInterface
 {
-    public function compare(array $match, Context $context) : bool;
+    public function compare(array $match, Request $request) : bool;
 }

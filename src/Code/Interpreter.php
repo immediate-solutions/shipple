@@ -1,7 +1,6 @@
 <?php
-namespace ImmediateSolutions\Shipple;
+namespace ImmediateSolutions\Shipple\Code;
 
-use ImmediateSolutions\Shipple\Code\Arguments;
 use ImmediateSolutions\Shipple\Code\Matcher\MatcherInterface;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 
@@ -27,43 +26,90 @@ class Interpreter
     }
 
     /**
-     * @param string $pattern
+     * @param string $template
      * @param mixed $source
      * @return bool
      */
-    public function match(string $pattern, $source): bool
+    public function match(string $template, $source): bool
     {
+        if (!is_string($template)) {
+            return $template === $source;
+        }
 
+        $context = new Context($template);
+
+        $codes = $this->extractCodes($template);
+
+        $segments = $this->breakByCodes($template, array_unique($codes));
+
+        $pattern = '';
+
+        foreach ($segments as $segment) {
+
+            $segment = $this->escapeSegment($segment);
+
+            $pattern .= preg_quote($segment[0], '/').'(.*)';
+        }
+
+        $pattern = '/^' . $pattern . '$/';
+
+        $result = [];
+
+        if (!preg_match($pattern, $source, $result)) {
+            return false;
+        }
+
+        unset($result[0]);
+
+        $result = array_values($result);
+
+        foreach ($codes as $index => $code) {
+
+            if ($parsedCode = $this->parseCode($code)) {
+
+                if (!isset($this->matchers[$parsedCode['name']])) {
+                    return false;
+                }
+
+                $matcher = $this->matchers[$parsedCode['name']];
+
+                try {
+
+                    $value = $context->onlyCode() ? $source : $result[$index];
+
+                    $matched = $matcher->match($value, new Arguments(
+                        $parsedCode['arguments']['ordered'],
+                        $parsedCode['arguments']['named']
+                    ), $context);
+
+                    if (!$matched) {
+                        return false;
+                    }
+
+                } catch (\InvalidArgumentException $ex) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
-     * @param mixed $source
+     * @param mixed $template
      * @return mixed
      */
-    public function interpret($source)
+    public function interpret($template)
     {
-        if (!is_string($source)){
-            return $source;
+        if (!is_string($template)){
+            return $template;
         }
 
-        $onlyCode = false;
+        $context = new Context($template);
 
-        if (mb_substr($source, 0, 2) === '{{' && mb_substr($source, -2) === '}}') {
-            $onlyCode = true;
-        }
+        $codes = array_unique($this->extractCodes($template));
 
-        $codes = $this->extractCodes($source);
-
-        $segments = $this->breakByCodes($source, $codes);
-
-        $escapedSource = '';
-
-        foreach ($segments as $segment) {
-            $segment[0] = str_replace('\{', '{', $segment[0]);
-            $segment[0] = str_replace('\}', '}', $segment[0]);
-
-            $escapedSource .= $segment[0] . $segment[1];
-        }
+        $template = $this->escapeTemplate($template, $codes);
 
         foreach ($codes as $code) {
 
@@ -81,25 +127,48 @@ class Interpreter
                     $value = $provider->provide(new Arguments(
                         $parsedCode['arguments']['ordered'],
                         $parsedCode['arguments']['named']
-                    ));
+                    ), $context);
                 } catch (\InvalidArgumentException $ex) {
                     continue ;
                 }
 
-                if ($onlyCode) {
+                if ($context->onlyCode()) {
                     return $value;
                 }
 
-                $escapedSource = str_replace($code, $value, $escapedSource);
+                $template = str_replace($code, $value, $template);
             }
+        }
+
+        return $template;
+    }
+
+    private function escapeTemplate(string $template, array $codes): string
+    {
+        $segments = $this->breakByCodes($template, $codes);
+
+        $escapedSource = '';
+
+        foreach ($segments as $segment) {
+
+            $segment = $this->escapeSegment($segment);
+
+            $escapedSource .= $segment[0] . $segment[1];
         }
 
         return $escapedSource;
     }
 
-    private function breakByCodes(string $source, array $codes): array
+    private function escapeSegment(array $segment): array
     {
-        $result = [[$source, '']];
+        $segment[0] = str_replace(['\{', '\}'], ['{','}' ], $segment[0]);
+
+        return $segment;
+    }
+
+    private function breakByCodes(string $template, array $codes): array
+    {
+        $result = [[$template, '']];
 
         foreach ($codes as $code) {
             $result = $this->breakByCode($result, $code);
@@ -109,11 +178,11 @@ class Interpreter
         return $result;
     }
 
-    private function breakByCode(array $source, string $code): array
+    private function breakByCode(array $template, string $code): array
     {
         $result = [];
 
-        foreach ($source as $segment) {
+        foreach ($template as $segment) {
             $parts = explode($code, $segment[0]);
 
             $parts = array_map(function(string $value) use ($code) {
@@ -235,7 +304,7 @@ class Interpreter
             return null;
         }
 
-        return str_replace('\\\'', '\'', str_replace('\}', '}', str_replace('\{', '{', trim($value, '\''))));
+        return str_replace(['\\\'', '\}', '\{'], ['\'', '}', '{'], substr($value, 1, -1));
     }
 
     private function extractCodes(string $text): array
@@ -244,6 +313,6 @@ class Interpreter
 
         preg_match_all('/{{(?:\\\\.|[^}])*}}/', $text, $result);
 
-        return array_unique($result[0]) ?? [];
+        return $result[0] ?? [];
     }
 }

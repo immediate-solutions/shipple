@@ -1,7 +1,7 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparator;
 
-use ImmediateSolutions\Shipple\Interpreter;
+use ImmediateSolutions\Shipple\Code\Interpreter;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>

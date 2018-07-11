@@ -1,8 +1,8 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparator;
 
-use ImmediateSolutions\Shipple\Context;
-use ImmediateSolutions\Shipple\Interpreter;
+use ImmediateSolutions\Shipple\Request;
+use ImmediateSolutions\Shipple\Code\Interpreter;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -25,10 +25,10 @@ class MatchComparator implements ComparatorInterface
         ];
     }
 
-    public function compare(array $match, Context $context): bool
+    public function compare(array $match, Request $request): bool
     {
         foreach ($this->comparators as $comparator) {
-            if (!$comparator->compare($match, $context)) {
+            if (!$comparator->compare($match, $request)) {
                 return false;
             }
         }
