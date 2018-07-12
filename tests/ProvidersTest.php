@@ -4,6 +4,7 @@ namespace ImmediateSolutions\Shipple\Tests;
 use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
 use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
+use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
@@ -86,12 +87,17 @@ class ProvidersTest extends TestCase
     public function testFake()
     {
         $interpreter = new Interpreter([
-            'between' => new BetweenProvider()
+            'between' => new BetweenProvider(),
+            'uuid' => new UuidProvider()
         ], []);
 
         $result = $interpreter->interpret("{{ between: max=10, text=19 }}");
 
         Assert::assertEquals("{{ between: max=10, text=19 }}", $result);
+
+        $result = $interpreter->interpret("{{ uuid: text=19 }}");
+
+        Assert::assertNotEquals("{{ uuid: text=19 }}", $result);
 
         $result = $interpreter->interpret("{{ between: max=10, many=true }}");
 

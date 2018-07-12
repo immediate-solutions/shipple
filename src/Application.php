@@ -5,16 +5,13 @@ use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Comparator\MatchComparator;
 use ImmediateSolutions\Shipple\Loader\LoaderInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
-use ImmediateSolutions\Shipple\Code\Matcher\MatcherInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\PatternMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
-use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
 use ImmediateSolutions\Shipple\Code\Provider\TextProvider;
 use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
-use ImmediateSolutions\Shipple\Response\ResponseFactoryInterface;
 use ImmediateSolutions\Shipple\Response\StubResponseFactory;
 use Psr\Http\Message\RequestInterface;
 use Zend\Diactoros\ServerRequestFactory;
@@ -25,95 +22,61 @@ use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
  */
 class Application
 {
-    /**
-     * @var ResponseFactoryInterface
-     */
-    private $mismatchResponseFactory;
+    const MATCH_CONTENT_TYPE_JSON = 'json';
+    const MATCH_CONTENT_TYPE_FORM = 'form';
+    const MATCH_CONTENT_TYPE_TEXT = 'text';
+    const MATCH_CONTENT_TYPE_XML = 'xml';
 
-    /**
-     * @var ProviderInterface[]
-     */
-    private $providers = [];
-
-    /**
-     * @var MatcherInterface[]
-     */
-    private $matchers = [];
+    const RESPONSE_CONTENT_TYPE_JSON = 'json';
+    const RESPONSE_CONTENT_TYPE_TEXT = 'text';
+    const RESPONSE_CONTENT_TYPE_XML = 'xml';
 
     /**
      * @var LoaderInterface
      */
     private $loader;
 
+    /**
+     * @var Preference
+     */
+    private $preference;
 
-    public function __construct(LoaderInterface $loader)
+    public function __construct(LoaderInterface $loader, Preference $preference = null)
     {
         $this->loader = $loader;
 
-        $this->addProvider('datetime', new DateTimeProvider());
-        $this->addProvider('uuid', new UuidProvider());
-        $this->addProvider('text', new TextProvider());
-        $this->addProvider('number', new BetweenProvider());
+        if ($preference === null) {
 
-        $this->addMatcher('type', new TypeMatcher());
-        $this->addMatcher('choice', new ChoiceMatcher());
-        $this->addMatcher('pattern', new PatternMatcher());
+            $preference = new Preference();
 
-        $this->setMismatchResponseFactory(new Error404ResponseFactory());
+            $preference->addProvider('datetime', new DateTimeProvider());
+            $preference->addProvider('uuid', new UuidProvider());
+            $preference->addProvider('text', new TextProvider());
+            $preference->addProvider('between', new BetweenProvider());
+
+            $preference->addMatcher('type', new TypeMatcher());
+            $preference->addMatcher('choice', new ChoiceMatcher());
+            $preference->addMatcher('pattern', new PatternMatcher());
+
+            $preference->setMismatchResponseFactory(new Error404ResponseFactory());
+
+            $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
+            $preference->setResponseBodyType(Preference::RESPONSE_BODY_TYPE_JSON);
+        }
+
+        $this->preference = $preference;
     }
 
-
-    /**
-     * @var ProviderInterface[] $providers
-     */
-    public function setProviders(array $providers)
+    public function setPreference(Preference $preference): void
     {
-        $this->providers = $providers;
+        $this->preference = $preference;
     }
 
-    /**
-     * @return ProviderInterface[]
-     */
-    public function getProviders(): array
+    public function getPreference(): Preference
     {
-        return $this->providers;
+        return $this->preference;
     }
 
-    /**
-     * @var MatcherInterface[] $matchers
-     */
-    public function setMatchers(array $matchers)
-    {
-        $this->matchers = $matchers;
-    }
-
-    /**
-     * @return MatcherInterface[]
-     */
-    public function getMatchers(): array
-    {
-        return $this->matchers;
-    }
-
-    public function addProvider(string $name, ProviderInterface $provider): void
-    {
-        $this->providers[$name] = $provider;
-    }
-
-    public function addMatcher(string $name, MatcherInterface $matcher): void
-    {
-        $this->matchers[$name] = $matcher;
-    }
-
-    public function setMismatchResponseFactory(ResponseFactoryInterface $responseFactory)
-    {
-        $this->mismatchResponseFactory = $responseFactory;
-    }
-
-    public function getMismatchResponseFactory(): ResponseFactoryInterface
-    {
-        return $this->mismatchResponseFactory;
-    }
 
     public function run(RequestInterface $request = null): void
     {
@@ -122,7 +85,7 @@ class Application
         $stub = $this->match($request);
 
         if (!$stub) {
-            $response = $this->mismatchResponseFactory->create();
+            $response = $this->preference->getMismatchResponseFactory()->create();
         } else {
             $response = (new StubResponseFactory($stub))->create();
         }
@@ -132,10 +95,13 @@ class Application
 
     private function match(RequestInterface $request): array
     {
-        $comparator = new MatchComparator(new Interpreter($this->getProviders(), $this->getMatchers()));
+        $comparator = new MatchComparator(new Interpreter(
+            $this->preference->getProviders(),
+            $this->preference->getMatchers()
+        ), $this->getPreference());
 
         foreach ($this->loader->load() as $stub) {
-            if ($comparator->compare($stub['match'], new Request($request))) {
+            if ($comparator->compare($stub['match'], $request)) {
                 return $stub;
             }
         }
