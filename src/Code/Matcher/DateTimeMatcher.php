@@ -2,6 +2,7 @@
 namespace ImmediateSolutions\Shipple\Code\Matcher;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
+use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -18,7 +19,7 @@ class DateTimeMatcher implements MatcherInterface
         $format = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['format'] ?? null);
 
         if ($format == null) {
-            throw new \InvalidArgumentException();
+            throw new InvalidCodeException('Format is required');
         }
 
         return \DateTime::createFromFormat($format, $value) !== false;

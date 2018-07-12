@@ -25,6 +25,11 @@ class Preference
     private $mismatchResponseFactory;
 
     /**
+     * @var ResponseFactoryInterface
+     */
+    private $errorResponseFactory;
+
+    /**
      * @var ProviderInterface[]
      */
     private $providers = [];
@@ -114,5 +119,15 @@ class Preference
     public function getResponseBodyType(): string
     {
         return $this->matchBodyType;
+    }
+
+    public function setErrorResponseFactory(ResponseFactoryInterface $errorResponseFactory)
+    {
+        $this->errorResponseFactory = $errorResponseFactory;
+    }
+
+    public function getErrorResponseFactory(): ResponseFactoryInterface
+    {
+        return $this->errorResponseFactory;
     }
 }

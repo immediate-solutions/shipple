@@ -5,6 +5,7 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator as Faker;
 use Faker\Generator;
 use ImmediateSolutions\Shipple\Code\Arguments;
+use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -30,7 +31,7 @@ abstract class FakerProvider implements ProviderInterface
         $many = $arguments->getNamed()['many'] ?? null;
 
         if (!is_int($many) && $many !== null) {
-            throw new \InvalidArgumentException();
+            throw new InvalidCodeException('Many must be an integer or null');
         }
 
         $text = false;
@@ -40,7 +41,7 @@ abstract class FakerProvider implements ProviderInterface
             $text = $arguments->getNamed()['text'] ?? false;
 
             if (!is_bool($text)) {
-                throw new \InvalidArgumentException();
+                throw new InvalidCodeException('Text must be an boolean');
             }
         }
 

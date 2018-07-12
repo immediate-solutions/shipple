@@ -2,6 +2,7 @@
 namespace ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
+use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 
 /**
@@ -19,7 +20,7 @@ class SumProvider implements ProviderInterface
         $b = $arguments->getOrdered()[1] ?? null;
 
         if ($a === null || $b === null || !(is_int($a) || is_float($a)) || !(is_int($b) || is_float($b))) {
-            throw new \InvalidArgumentException();
+            throw new InvalidCodeException();
         }
 
         return $a + $b;

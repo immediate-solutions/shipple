@@ -2,6 +2,7 @@
 namespace ImmediateSolutions\Shipple\Code\Provider;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
+use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -18,9 +19,13 @@ class DateTimeProvider implements ProviderInterface
         $format = $arguments->getOrdered()[1] ?? ($arguments->getNamed()['format']);
 
         if ($format === null || $qualifier === null) {
-            throw new \InvalidArgumentException();
+            throw new InvalidCodeException('Format and qualifier are required');
         }
 
-        return (new \DateTime($qualifier))->format($format);
+        try {
+            return (new \DateTime($qualifier))->format($format);
+        } catch (\Exception $ex) {
+            throw new InvalidCodeException('Format is invalid', $ex);
+        }
     }
 }

@@ -12,6 +12,7 @@ use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
 use ImmediateSolutions\Shipple\Code\Provider\TextProvider;
 use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
+use ImmediateSolutions\Shipple\Response\Error500ResponseFactory;
 use ImmediateSolutions\Shipple\Response\StubResponseFactory;
 use Psr\Http\Message\RequestInterface;
 use Zend\Diactoros\ServerRequestFactory;
@@ -59,6 +60,7 @@ class Application
             $preference->addMatcher('pattern', new PatternMatcher());
 
             $preference->setMismatchResponseFactory(new Error404ResponseFactory());
+            $preference->setErrorResponseFactory(new Error500ResponseFactory());
 
             $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
             $preference->setResponseBodyType(Preference::RESPONSE_BODY_TYPE_JSON);

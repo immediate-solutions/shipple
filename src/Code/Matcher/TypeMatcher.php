@@ -2,6 +2,7 @@
 namespace ImmediateSolutions\Shipple\Code\Matcher;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
+use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -25,7 +26,7 @@ class TypeMatcher implements MatcherInterface
         $availableTypes = [self::TYPE_BOOL, self::TYPE_NUMBER, self::TYPE_INT, self::TYPE_TEXT];
 
         if (!in_array($type, $availableTypes)) {
-            throw new \InvalidArgumentException();
+            throw new InvalidCodeException('Type is not in the list of "'.implode(', ', $availableTypes).'"');
         }
 
         if ($type === self::TYPE_TEXT) {

@@ -1,6 +1,8 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparator;
 
+use ImmediateSolutions\Shipple\Converter\JsonConverter;
+use ImmediateSolutions\Shipple\Converter\XmlConverter;
 use ImmediateSolutions\Shipple\Preference;
 use Psr\Http\Message\RequestInterface;
 
@@ -51,13 +53,14 @@ class BodyComparator extends AbstractComparator
 
     private function compareXml($template, string $content, MergedOptions $options): bool
     {
-        return true;
+        $data = (new XmlConverter())->toNormal($content);
+
+        return $this->compareNormal($template, $data, $options);
     }
 
     private function compareJson($template, string $content, MergedOptions $options): bool
     {
-
-        $data = json_decode($content);
+        $data = (new JsonConverter())->toNormal($content);
 
         if ($data === null && trim($content) !== 'null') {
             return false;
@@ -71,6 +74,11 @@ class BodyComparator extends AbstractComparator
             return false;
         }
 
+        return $this->compareNormal($template, $data, $options);
+    }
+
+    private function compareNormal(array $template, array $data, MergedOptions $options): bool
+    {
         $template = $this->normalize($template);
 
         $data = $this->normalize($data);

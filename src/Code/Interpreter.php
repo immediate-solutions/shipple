@@ -86,7 +86,7 @@ class Interpreter
                         return false;
                     }
 
-                } catch (\Throwable $ex) {
+                } catch (InvalidCodeException $ex) {
                     return false;
                 }
             }
@@ -128,7 +128,7 @@ class Interpreter
                         $parsedCode['arguments']['ordered'],
                         $parsedCode['arguments']['named']
                     ));
-                } catch (\Throwable $ex) {
+                } catch (InvalidCodeException $ex) {
                     continue ;
                 }
 
