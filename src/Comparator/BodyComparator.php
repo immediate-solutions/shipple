@@ -1,17 +1,18 @@
 <?php
 namespace ImmediateSolutions\Shipple\Comparator;
 
-use ImmediateSolutions\Shipple\Converter\JsonConverter;
-use ImmediateSolutions\Shipple\Converter\XmlConverter;
+use ImmediateSolutions\Shipple\Converter\FormNormalizer;
+use ImmediateSolutions\Shipple\Converter\JsonNormalizer;
+use ImmediateSolutions\Shipple\Converter\XmlNormalizer;
 use ImmediateSolutions\Shipple\Preference;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
 class BodyComparator extends AbstractComparator
 {
-    public function compare(array $match, RequestInterface $request): bool
+    public function compare(array $match, ServerRequestInterface $request): bool
     {
         if (!array_key_exists('body', $match)) {
             return true;
@@ -21,7 +22,7 @@ class BodyComparator extends AbstractComparator
 
         $options = $this->getMergedOptions($match);
 
-        $content = $request->getBody()->getContents();
+        $content = (string) $request->getBody();
 
         if (($template === null || $template === '') && ($content === '' || $content === null)) {
             return true;
@@ -42,27 +43,27 @@ class BodyComparator extends AbstractComparator
 
         $method = 'compare' . preg_replace('/(?:^|-)(.?)/e', "strtoupper('$1')", $contentType);
 
-        return call_user_func([$this,  $method], $template, $content, $options);
+        return call_user_func([$this,  $method], $template, $request, $options);
 
     }
 
-    private function compareText($template, string $content, MergedOptions $options): bool
+    private function compareText($template, ServerRequestInterface $request, MergedOptions $options): bool
     {
-        return $this->interpreter->match($template, $content);
+        return $this->interpreter->match($template, (string) $request->getBody());
     }
 
-    private function compareXml($template, string $content, MergedOptions $options): bool
+    private function compareXml($template, ServerRequestInterface $request, MergedOptions $options): bool
     {
-        $data = (new XmlConverter())->toNormal($content);
+        $data = (new XmlNormalizer())->normalize($request);
 
-        return $this->compareNormal($template, $data, $options);
+        return $this->compareNormalized($template, $data, $options);
     }
 
-    private function compareJson($template, string $content, MergedOptions $options): bool
+    private function compareJson($template, ServerRequestInterface $request, MergedOptions $options): bool
     {
-        $data = (new JsonConverter())->toNormal($content);
+        $data = (new JsonNormalizer())->normalize($request);
 
-        if ($data === null && trim($content) !== 'null') {
+        if ($data === null && trim((string) $request->getBody()) !== 'null') {
             return false;
         }
 
@@ -74,10 +75,10 @@ class BodyComparator extends AbstractComparator
             return false;
         }
 
-        return $this->compareNormal($template, $data, $options);
+        return $this->compareNormalized($template, $data, $options);
     }
 
-    private function compareNormal(array $template, array $data, MergedOptions $options): bool
+    private function compareNormalized(array $template, array $data, MergedOptions $options): bool
     {
         $template = $this->normalize($template);
 
@@ -87,9 +88,11 @@ class BodyComparator extends AbstractComparator
     }
 
 
-    private function compareForm($template, string $content, MergedOptions $options): bool
+    private function compareForm($template, ServerRequestInterface $request, MergedOptions $options): bool
     {
-        return true;
+        $data = (new FormNormalizer())->normalize($request);
+
+        return $this->compareNormalized($template, $data, $options);
     }
 
     private function compareByScope(array $template, array $data, MergedOptions $options): bool

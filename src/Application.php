@@ -14,7 +14,7 @@ use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
 use ImmediateSolutions\Shipple\Response\Error500ResponseFactory;
 use ImmediateSolutions\Shipple\Response\StubResponseFactory;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\ServerRequestFactory;
 use Zend\HttpHandlerRunner\Emitter\SapiEmitter;
 
@@ -80,7 +80,7 @@ class Application
     }
 
 
-    public function run(RequestInterface $request = null): void
+    public function run(ServerRequestInterface $request = null): void
     {
         $request = $request ?: ServerRequestFactory::fromGlobals();
 
@@ -95,7 +95,7 @@ class Application
         (new SapiEmitter())->emit($response);
     }
 
-    private function match(RequestInterface $request): array
+    private function match(ServerRequestInterface $request): array
     {
         $comparator = new MatchComparator(new Interpreter(
             $this->preference->getProviders(),

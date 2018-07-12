@@ -1,0 +1,193 @@
+[
+    {
+        "order": 1,
+
+
+        "match": {
+            "method": "POST",
+            "path": "/users/documents/{{ pattern: '^[0-9]+$' }}",
+
+            "body": {
+                "{{ choice: 'username', 'email'}}": "admin",
+                "expiresAt": "{{ datetime: 'Y-m-d' }}",
+                "token": "asdasd as asd as  \\}\\} and \\{\\ {{ choice: '\\{how\\}', 'no', 'yes' }} \\}\\} asdasd  asd"
+            },
+
+            "query": {
+                "p1": "v1",
+                "p2": "d",
+                "p3": ["3", "4"],
+                "p4[]": ["2", "2"]
+            },
+
+            "options": {
+
+                "body": {
+                    "type": "text",
+                    "scope": "soft"
+                }
+            }
+        },
+
+        "response": {
+            "status": 400,
+            "body": {
+                "id": "{{ uuid }}",
+                "amount": "{{ number: 0, text=true }}",
+                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }}",
+                "token": "abc {{ uuid }}"
+            },
+            "options": {
+
+                "body": {
+                    "type": "json",
+                    "scope": "parcial"
+                }
+
+            }
+        }
+    },
+    {
+        "match": {
+            "method": "POST",
+            "path": "/update-that",
+
+            "body": "as.dnaksFNAMS,DFNSDAFSADF ASFASDFSADFSADFSDFSAD DFSSD2D",
+
+            "options": {
+
+                "body": {
+                    "type": "text"
+                }
+            }
+        },
+
+        "response": {
+            "status": 400,
+            "body": {
+                "id": "{{ uuid: many=20 }}",
+                "numbers": ["{{ text }}", "{{ number }}"],
+                "amount": "{{ number: 0, text=true }}",
+                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }}",
+                "token": "abc {{ uuid }}"
+            }
+        }
+    },
+
+    {
+        "match": {
+            "method": "POST",
+            "path": "/update-that",
+
+            "body": [
+                {
+                    "name": "root",
+                    "type": "element",
+                    "attributes": [
+                        {
+                            "name": "color",
+                            "value": "red"
+                        },
+                        {
+                            "name": "active",
+                            "value": "true"
+                        }
+                    ],
+                    "children": [
+                        {
+                            "name": "items",
+                            "type": "element",
+                            "attributes": [],
+                            "children": [
+                                {
+                                    "name": "item",
+                                    "type": "element",
+                                    "attributes": [],
+                                    "children": [
+                                        {
+                                            "type": "text",
+                                            "value": "what"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+
+            "options": {
+
+                "body": {
+                    "type": "xml"
+                }
+            }
+        },
+
+        "response": {
+            "status": 400,
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "values": ["application/json", "plain/text"]
+                }
+            ],
+            "body": {
+                "id": "{{ uuid: many=20 }}",
+                "numbers": ["{{ text }}", "{{ number }}"],
+                "amount": "{{ number: 0, text=true }}",
+                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }}",
+                "token": "abc {{ uuid }}"
+            }
+        }
+    },
+
+    {
+        "order": 1,
+
+
+        "match": {
+            "method": "POST",
+            "path": "/users/documents/{{ pattern: '^[0-9]+$' }}",
+
+            "body": {
+                "p2": "asd",
+                "p3": ["a", "b"],
+                "file1": "{{ choice: 'file1.pdf', 'file2.pdf' }}"
+            },
+
+            "query": {
+                "p1": "v1",
+                "p2": "d",
+                "p3": ["3", "4"],
+                "p4[]": ["2", "2"]
+            },
+
+            "options": {
+
+                "body": {
+                    "type": "form",
+                    "scope": "soft"
+                }
+            }
+        },
+
+        "response": {
+            "status": 400,
+            "body": {
+                "id": "{{ uuid }}",
+                "amount": "{{ number: 0, text=true }}",
+                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }}",
+                "token": "abc {{ uuid }}"
+            },
+            "options": {
+
+                "body": {
+                    "type": "json",
+                    "scope": "partial"
+                }
+
+            }
+        }
+    },
+]

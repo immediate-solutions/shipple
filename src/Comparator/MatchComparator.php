@@ -3,7 +3,7 @@ namespace ImmediateSolutions\Shipple\Comparator;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Preference;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -26,7 +26,7 @@ class MatchComparator implements ComparatorInterface
         ];
     }
 
-    public function compare(array $match, RequestInterface $request): bool
+    public function compare(array $match, ServerRequestInterface $request): bool
     {
         foreach ($this->comparators as $comparator) {
             if (!$comparator->compare($match, $request)) {
