@@ -3,7 +3,7 @@ namespace ImmediateSolutions\Shipple\Tests;
 
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
 use ImmediateSolutions\Shipple\Code\Interpreter;
-use ImmediateSolutions\Shipple\Code\Provider\NumberProvider;
+use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\ConcatProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\DummyProvider;
 use ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider\IdProvider;
@@ -25,7 +25,7 @@ class InterpreterTest extends TestCase
             'dummy' => new DummyProvider(),
             'concat' => new ConcatProvider(),
             'id' => new IdProvider(),
-            'number' => new NumberProvider()
+            'number' => new BetweenProvider()
         ], []);
 
         $result = $interpreter->interpret(2);
@@ -37,6 +37,20 @@ class InterpreterTest extends TestCase
 
         Assert::assertEquals(30, $result);
         Assert::assertTrue(is_int($result));
+
+        $result = $interpreter->interpret('{{ sum: -10, 20 }}');
+
+        Assert::assertEquals(10, $result);
+        Assert::assertTrue(is_int($result));
+
+        $result = $interpreter->interpret('{{ sum: -30.2, 20.22 }}');
+
+        Assert::assertEquals(-9.98, $result);
+        Assert::assertTrue(is_float($result));
+
+        $result = $interpreter->interpret('{{ product: a=-1, b=2 }}');
+
+        Assert::assertEquals(-2, $result);
 
         $result = $interpreter->interpret('some text to test !@#!%%@^^#%$%$& ()..,');
 
@@ -191,7 +205,7 @@ class InterpreterTest extends TestCase
         Assert::assertTrue($result);
 
         $result = $interpreter->match(
-            'what hey see that {{ choice: \'a\', \'b\', \'c\' }} hey this and that is {{ choice: 1, 3, 4 }}',
+            "what hey see that {{ choice: 'a', 'b', 'c' }} hey this and that is {{ choice: '1', '3', '4' }}",
             'what hey see that a hey this and that is 4');
 
         Assert::assertTrue($result);

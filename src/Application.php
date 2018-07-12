@@ -10,7 +10,7 @@ use ImmediateSolutions\Shipple\Code\Matcher\PatternMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
-use ImmediateSolutions\Shipple\Code\Provider\NumberProvider;
+use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
 use ImmediateSolutions\Shipple\Code\Provider\TextProvider;
 use ImmediateSolutions\Shipple\Code\Provider\UuidProvider;
 use ImmediateSolutions\Shipple\Response\Error404ResponseFactory;
@@ -53,7 +53,7 @@ class Application
         $this->addProvider('datetime', new DateTimeProvider());
         $this->addProvider('uuid', new UuidProvider());
         $this->addProvider('text', new TextProvider());
-        $this->addProvider('number', new NumberProvider());
+        $this->addProvider('number', new BetweenProvider());
 
         $this->addMatcher('type', new TypeMatcher());
         $this->addMatcher('choice', new ChoiceMatcher());

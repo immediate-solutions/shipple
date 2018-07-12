@@ -35,7 +35,7 @@ class MatchersTest extends TestCase
             'choice' => new ChoiceMatcher()
         ]);
 
-        $result = $interpreter->match("abc{{ choice: 4, 5, 'e' }}def", 'abc5def');
+        $result = $interpreter->match("abc{{ choice: '4', '5', 'e' }}def", 'abc5def');
 
         Assert::assertTrue($result);
 
@@ -106,9 +106,9 @@ class MatchersTest extends TestCase
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("not working thing {{ type: 'text' }}", 'not working thing text');
+        $result = $interpreter->match("this is working {{ type: 'text' }}", 'this is working thing');
 
-        Assert::assertFalse($result);
+        Assert::assertTrue($result);
 
     }
 

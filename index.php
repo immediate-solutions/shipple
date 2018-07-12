@@ -6,7 +6,7 @@
 require_once  __DIR__ . '/vendor/autoload.php';
 
 
-$template = "{{ text: 10, many=100, optional=true, optional_weight=0.1, optional_default='+' }}";
+$template = "{{ text: 10, many=100 }}";
 
 
 $interpreter = new \ImmediateSolutions\Shipple\Code\Interpreter([

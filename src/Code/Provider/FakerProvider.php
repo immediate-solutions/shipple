@@ -5,7 +5,6 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator as Faker;
 use Faker\Generator;
 use ImmediateSolutions\Shipple\Code\Arguments;
-use ImmediateSolutions\Shipple\Code\Context;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -24,15 +23,25 @@ abstract class FakerProvider implements ProviderInterface
 
     /**
      * @param Arguments $arguments
-     * @param Context $context
      * @return mixed
      */
-    public function provide(Arguments $arguments, Context $context)
+    public function provide(Arguments $arguments)
     {
         $many = $arguments->getNamed()['many'] ?? null;
 
         if (!is_int($many) && $many !== null) {
             throw new \InvalidArgumentException();
+        }
+
+        $text = false;
+
+        if ($this->canText()) {
+
+            $text = $arguments->getNamed()['text'] ?? false;
+
+            if (!is_bool($text)) {
+                throw new \InvalidArgumentException();
+            }
         }
 
         $normalizedArguments = $this->normalize($arguments);
@@ -42,13 +51,27 @@ abstract class FakerProvider implements ProviderInterface
             $result = [];
 
             for ($i = 0; $i < $many; $i ++) {
-                $result[] = $this->generate($this->faker, $normalizedArguments);
+
+                $value = $this->generate($this->faker, $normalizedArguments);
+
+                if ($text) {
+                    $value = (string) $value;
+                }
+
+                $result[] = $value;
             }
 
             return $result;
         }
 
-        return $this->generate($this->faker, $normalizedArguments);
+        $value = $this->generate($this->faker, $normalizedArguments);
+
+        return $text ? (string) $value : $value;
+    }
+
+    protected function canText(): bool
+    {
+        return false;
     }
 
     abstract protected function normalize(Arguments $arguments): array;

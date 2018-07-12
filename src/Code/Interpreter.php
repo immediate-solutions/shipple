@@ -36,7 +36,7 @@ class Interpreter
             return $template === $source;
         }
 
-        $context = new Context($template);
+        $onlyCode = $this->onlyCode($template);
 
         $codes = $this->extractCodes($template);
 
@@ -75,12 +75,12 @@ class Interpreter
 
                 try {
 
-                    $value = $context->onlyCode() ? $source : $result[$index];
+                    $value = $onlyCode ? $source : $result[$index];
 
                     $matched = $matcher->match($value, new Arguments(
                         $parsedCode['arguments']['ordered'],
                         $parsedCode['arguments']['named']
-                    ), $context);
+                    ));
 
                     if (!$matched) {
                         return false;
@@ -105,7 +105,7 @@ class Interpreter
             return $template;
         }
 
-        $context = new Context($template);
+        $onlyCode = $this->onlyCode($template);
 
         $codes = array_unique($this->extractCodes($template));
 
@@ -127,12 +127,12 @@ class Interpreter
                     $value = $provider->provide(new Arguments(
                         $parsedCode['arguments']['ordered'],
                         $parsedCode['arguments']['named']
-                    ), $context);
+                    ));
                 } catch (\Throwable $ex) {
                     continue ;
                 }
 
-                if ($context->onlyCode()) {
+                if ($onlyCode) {
                     return $value;
                 }
 
@@ -222,7 +222,7 @@ class Interpreter
 
         $patterns = [
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(\'(?:\\\\.|[^\'])*\')(?: *,|,|$)/', // text
-            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?((?:0|[1-9][0-9]*)(?:\.[0-9]+)?)(?: *,|,|$)/', // numbers
+            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?((?:-)?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)(?: *,|,|$)/', // numbers
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(true|false|null)(?: *,|,|$)/', // true, false, null
         ];
 
@@ -318,5 +318,10 @@ class Interpreter
         preg_match_all('/{{(?:\\\\.|[^}])*}}/', $text, $result);
 
         return $result[0] ?? [];
+    }
+
+    private function onlyCode(string $template): bool
+    {
+        return mb_substr($template, 0, 2) === '{{' && mb_substr($template, -2) === '}}';
     }
 }

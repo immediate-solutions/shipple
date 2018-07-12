@@ -2,7 +2,6 @@
 namespace ImmediateSolutions\Shipple\Tests\Mock\Interpreter\Provider;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
-use ImmediateSolutions\Shipple\Code\Context;
 use ImmediateSolutions\Shipple\Code\Provider\ProviderInterface;
 
 /**
@@ -12,10 +11,9 @@ class IdProvider implements ProviderInterface
 {
     /**
      * @param Arguments $arguments
-     * @param Context $context
      * @return mixed
      */
-    public function provide(Arguments $arguments, Context $context)
+    public function provide(Arguments $arguments)
     {
         return 'unique_text';
     }

@@ -2,7 +2,6 @@
 namespace ImmediateSolutions\Shipple\Code\Matcher;
 
 use ImmediateSolutions\Shipple\Code\Arguments;
-use ImmediateSolutions\Shipple\Code\Context;
 
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
@@ -17,17 +16,15 @@ class TypeMatcher implements MatcherInterface
     /**
      * @param mixed $value
      * @param Arguments $arguments
-     * @param Context $context
      * @return bool
      */
-    public function match($value, Arguments $arguments, Context $context): bool
+    public function match($value, Arguments $arguments): bool
     {
         $type = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['name'] ?? null);
 
         $availableTypes = [self::TYPE_BOOL, self::TYPE_NUMBER, self::TYPE_INT, self::TYPE_TEXT];
 
-        if (!in_array($type, $availableTypes)
-            || !$context->onlyCode()) {
+        if (!in_array($type, $availableTypes)) {
             throw new \InvalidArgumentException();
         }
 

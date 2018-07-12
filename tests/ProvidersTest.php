@@ -3,7 +3,7 @@ namespace ImmediateSolutions\Shipple\Tests;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
 use ImmediateSolutions\Shipple\Code\Provider\DateTimeProvider;
-use ImmediateSolutions\Shipple\Code\Provider\NumberProvider;
+use ImmediateSolutions\Shipple\Code\Provider\BetweenProvider;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
@@ -36,42 +36,65 @@ class ProvidersTest extends TestCase
 
     }
 
-    public function testNumber()
+    public function testBetween()
     {
         $interpreter = new Interpreter([
-            'number' => new NumberProvider()
+            'between' => new BetweenProvider()
         ], []);
 
-        $result = $interpreter->interpret("{{ number: 1, 10 }}");
+        $result = $interpreter->interpret("{{ between: 1, 10 }}");
 
         Assert::assertTrue(is_int($result));
 
         Assert::assertTrue($result >= 1 && $result <= 10);
 
-        $result = $interpreter->interpret("{{ number: min=1, max=10 }}");
+        $result = $interpreter->interpret("{{ between: min=1, max=10 }}");
 
         Assert::assertTrue($result >= 1 && $result <= 10);
 
-        $result = $interpreter->interpret("{{ number }}");
+        $result = $interpreter->interpret("{{ between }}");
 
         Assert::assertTrue(is_int($result));
 
-        $result = $interpreter->interpret("{{ number: 100 }}");
+        $result = $interpreter->interpret("{{ between: 100 }}");
 
         Assert::assertTrue($result >= 100 );
 
-        $result = $interpreter->interpret("{{ number: max=10 }}");
+        $result = $interpreter->interpret("{{ between: max=10 }}");
 
         Assert::assertTrue($result <= 10);
 
-        $result = $interpreter->interpret("{{ number: max=10, text=true }}");
+        $result = $interpreter->interpret("{{ between: max=10, text=true }}");
 
         Assert::assertTrue(is_string($result));
 
-        $result = $interpreter->interpret("{{ number: max=10, many=5 }}");
+        $result = $interpreter->interpret("{{ between: max=10, many=5 }}");
 
         Assert::assertTrue(is_array($result));
 
         Assert::assertCount(5, $result);
+
+        $result = $interpreter->interpret("{{ between: max=2147483650 }}");
+
+        Assert::assertEquals("{{ between: max=2147483650 }}", $result);
+
+        $result = $interpreter->interpret("{{ between: -10, 100 }}");
+
+        Assert::assertEquals("{{ between: -10, 100 }}", $result);
+    }
+
+    public function testFake()
+    {
+        $interpreter = new Interpreter([
+            'between' => new BetweenProvider()
+        ], []);
+
+        $result = $interpreter->interpret("{{ between: max=10, text=19 }}");
+
+        Assert::assertEquals("{{ between: max=10, text=19 }}", $result);
+
+        $result = $interpreter->interpret("{{ between: max=10, many=true }}");
+
+        Assert::assertEquals("{{ between: max=10, many=true }}", $result);
     }
 }
