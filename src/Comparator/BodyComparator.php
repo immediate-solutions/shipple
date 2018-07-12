@@ -54,6 +54,10 @@ class BodyComparator extends AbstractComparator
 
     private function compareXml($template, ServerRequestInterface $request, MergedOptions $options): bool
     {
+        if (!is_array($template)) {
+            return false;
+        }
+
         $data = (new XmlNormalizer())->normalize($request);
 
         return $this->compareNormalized($template, $data, $options);
@@ -68,12 +72,23 @@ class BodyComparator extends AbstractComparator
         }
 
         if (!is_array($data)) {
-            return $template === $data;
+            return $this->interpreter->match($template, $data);
         }
 
         if (is_array($data) && !is_array($template))  {
             return false;
         }
+
+        return $this->compareNormalized($template, $data, $options);
+    }
+
+    private function compareForm($template, ServerRequestInterface $request, MergedOptions $options): bool
+    {
+        if (!is_array($template)) {
+            return false;
+        }
+
+        $data = (new FormNormalizer())->normalize($request);
 
         return $this->compareNormalized($template, $data, $options);
     }
@@ -85,14 +100,6 @@ class BodyComparator extends AbstractComparator
         $data = $this->normalize($data);
 
         return $this->compareByScope($template, $data, $options);
-    }
-
-
-    private function compareForm($template, ServerRequestInterface $request, MergedOptions $options): bool
-    {
-        $data = (new FormNormalizer())->normalize($request);
-
-        return $this->compareNormalized($template, $data, $options);
     }
 
     private function compareByScope(array $template, array $data, MergedOptions $options): bool

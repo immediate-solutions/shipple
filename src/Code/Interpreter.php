@@ -30,7 +30,7 @@ class Interpreter
      * @param mixed $source
      * @return bool
      */
-    public function match(string $template, $source): bool
+    public function match($template, $source): bool
     {
         if (!is_string($template)) {
             return $template === $source;
