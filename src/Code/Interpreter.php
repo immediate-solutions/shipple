@@ -36,7 +36,9 @@ class Interpreter
             return $template === $source;
         }
 
-        $onlyCode = $this->onlyCode($template);
+        if ($this->onlyCode($template)) {
+            return $this->matchCode($template, $source);
+        }
 
         $codes = $this->extractCodes($template);
 
@@ -55,7 +57,7 @@ class Interpreter
 
         $result = [];
 
-        if (!preg_match($pattern, is_array($source) ? '[]' : $source , $result)) {
+        if (!preg_match($pattern, $source, $result)) {
             return false;
         }
 
@@ -64,32 +66,41 @@ class Interpreter
         $result = array_values($result);
 
         foreach ($codes as $index => $code) {
-
-            if ($parsedCode = $this->parseCode($code)) {
-
-                if (!isset($this->matchers[$parsedCode['name']])) {
-                    return false;
-                }
-
-                $matcher = $this->matchers[$parsedCode['name']];
-
-                try {
-
-                    $value = $onlyCode ? $source : $result[$index];
-
-                    $matched = $matcher->match($value, new Arguments(
-                        $parsedCode['arguments']['ordered'],
-                        $parsedCode['arguments']['named']
-                    ));
-
-                    if (!$matched) {
-                        return false;
-                    }
-
-                } catch (InvalidCodeException $ex) {
-                    return false;
-                }
+            if (!$this->matchCode($code, $result[$index])) {
+                return false;
             }
+        }
+
+        return true;
+    }
+
+    private function matchCode(string $code, $value): bool
+    {
+        $parsedCode = $this->parseCode($code);
+
+        if (!$parsedCode) {
+            return false;
+        }
+
+        if (!isset($this->matchers[$parsedCode['name']])) {
+            return false;
+        }
+
+        $matcher = $this->matchers[$parsedCode['name']];
+
+        try {
+
+            $matched = $matcher->match($value, new Arguments(
+                $parsedCode['arguments']['ordered'],
+                $parsedCode['arguments']['named']
+            ));
+
+            if (!$matched) {
+                return false;
+            }
+
+        } catch (InvalidCodeException $ex) {
+            return false;
         }
 
         return true;
