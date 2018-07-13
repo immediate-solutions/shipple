@@ -180,6 +180,10 @@ class InterpreterTest extends TestCase
         $result = $interpreter->interpret('{{dummy: [] }}');
 
         Assert::assertTrue(is_array($result) && count($result) === 0);
+
+        $result = $interpreter->interpret("{{ dummy: 'a'}}{{ dummy: 'b'}}");
+
+        Assert::assertEquals('ab', $result);
     }
 
     public function testMatch()
@@ -235,5 +239,9 @@ class InterpreterTest extends TestCase
         $result = $interpreter->match(true, false);
 
         Assert::assertFalse($result);
+
+        $result = $interpreter->match("{{ choice: 'a', 'b', 'c'}}{{ choice: 'x', 'y', 'z'}}", 'bz');
+
+        Assert::assertFalse($result); // because first choice grabs the whole string
     }
 }

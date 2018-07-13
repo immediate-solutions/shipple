@@ -16,6 +16,10 @@ class DigitsMatcher implements MatcherInterface
      */
     public function match($value, Arguments $arguments): bool
     {
+        if (!is_numeric($value)) {
+            return false;
+        }
+
         $quantity = $arguments->getOrdered()[0] ?? null;
 
         if (!is_int($quantity) && $quantity !== null) {

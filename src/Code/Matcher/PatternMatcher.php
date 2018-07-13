@@ -16,6 +16,10 @@ class PatternMatcher implements MatcherInterface
      */
     public function match($value, Arguments $arguments): bool
     {
+        if (is_array($value)) {
+            return false;
+        }
+
         $pattern = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['pattern'] ?? null);
 
         if ($pattern === null) {

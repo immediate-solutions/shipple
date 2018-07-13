@@ -40,17 +40,25 @@ class Interpreter
             return $this->matchCode($template, $source);
         }
 
+        if (!is_string($source)) {
+            return false;
+        }
+
         $codes = $this->extractCodes($template);
 
         $segments = $this->breakByCodes($template, array_unique($codes));
 
         $pattern = '';
 
+        $placeholder = '';
+
         foreach ($segments as $segment) {
 
             $segment = $this->escapeSegment($segment);
 
-            $pattern .= preg_quote($segment[0], '/').'(.*)';
+            $pattern .= $placeholder.preg_quote($segment[0], '/');
+
+            $placeholder = '(.*)';
         }
 
         $pattern = '/^' . $pattern . '$/';
@@ -341,6 +349,7 @@ class Interpreter
 
     private function onlyCode(string $template): bool
     {
-        return mb_substr($template, 0, 2) === '{{' && mb_substr($template, -2) === '}}';
+        return mb_substr($template, 0, 2) === '{{' && mb_substr($template, -2) === '}}'
+            && mb_substr_count($template, '{{') === 1 &&  mb_substr_count($template, '}}') === 1;
     }
 }

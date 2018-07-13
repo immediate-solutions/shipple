@@ -15,6 +15,10 @@ class FloatMatcher implements MatcherInterface
      */
     public function match($value, Arguments $arguments): bool
     {
+        if (!is_numeric($value)) {
+            return false;
+        }
+
         return preg_match('/^(?:-)?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/', $value) > 0;
     }
 }

@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class BodyComparatorTest extends TestCase
+class BodyComparatorTest// extends TestCase
 {
     public function testDefault()
     {

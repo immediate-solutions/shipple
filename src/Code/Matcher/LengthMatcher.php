@@ -7,7 +7,7 @@ use ImmediateSolutions\Shipple\Code\InvalidCodeException;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class DateTimeMatcher implements MatcherInterface
+class LengthMatcher implements MatcherInterface
 {
     /**
      * @param mixed $value
@@ -20,12 +20,12 @@ class DateTimeMatcher implements MatcherInterface
             return false;
         }
 
-        $format = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['format'] ?? null);
+        $length = $arguments->getOrdered()[0] ?? null;
 
-        if ($format == null) {
-            throw new InvalidCodeException('Format is required');
+        if (!is_int($length) && $length < 1) {
+            throw new InvalidCodeException('Length must be an integer and greater than 0');
         }
 
-        return \DateTime::createFromFormat($format, $value) !== false;
+        return mb_strlen($value) === $length;
     }
 }
