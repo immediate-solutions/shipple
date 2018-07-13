@@ -148,7 +148,7 @@
 
         "match": {
             "method": "POST",
-            "path": "/users/documents/{{ pattern: '^[0-9]+$' }}",
+            "path": "/users/documents/{{ digits }}",
 
             "body": {
                 "p2": "asd",
@@ -177,7 +177,7 @@
             "body": {
                 "id": "{{ uuid }}",
                 "amount": "{{ number: 0, text=true }}",
-                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }}",
+                "expiresAt": "{{ datetime: 'now', 'Y-m-d H:i:s' }} {{ number }}",
                 "token": "abc {{ uuid }}"
             },
             "options": {

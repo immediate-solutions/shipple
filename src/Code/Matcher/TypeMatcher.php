@@ -13,6 +13,7 @@ class TypeMatcher implements MatcherInterface
     const TYPE_INT = 'int';
     const TYPE_BOOL = 'bool';
     const TYPE_TEXT = 'text';
+    const TYPE_EMPTY_ARRAY = '[]';
 
     /**
      * @param mixed $value
@@ -23,7 +24,13 @@ class TypeMatcher implements MatcherInterface
     {
         $type = $arguments->getOrdered()[0] ?? ($arguments->getNamed()['name'] ?? null);
 
-        $availableTypes = [self::TYPE_BOOL, self::TYPE_NUMBER, self::TYPE_INT, self::TYPE_TEXT];
+        $availableTypes = [
+            self::TYPE_BOOL,
+            self::TYPE_NUMBER,
+            self::TYPE_INT,
+            self::TYPE_TEXT,
+            self::TYPE_EMPTY_ARRAY
+        ];
 
         if (!in_array($type, $availableTypes)) {
             throw new InvalidCodeException('Type is not in the list of "'.implode(', ', $availableTypes).'"');
@@ -43,6 +50,10 @@ class TypeMatcher implements MatcherInterface
 
         if ($type === self::TYPE_BOOL) {
             return is_bool($value);
+        }
+
+        if ($type === self::TYPE_EMPTY_ARRAY) {
+            return is_array($value) && count($value) === 0;
         }
 
         return false;

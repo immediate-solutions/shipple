@@ -18,11 +18,11 @@ class MatchComparator implements ComparatorInterface
     public function __construct(Interpreter $interpreter, Preference $preference)
     {
         $this->comparators = [
+            new HeaderComparator($interpreter, $preference),
             new PathComparator($interpreter, $preference),
             new MethodComparator($interpreter, $preference),
             new BodyComparator($interpreter, $preference),
             new QueryComparator($interpreter, $preference),
-            new FileComparator($interpreter, $preference)
         ];
     }
 

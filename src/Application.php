@@ -2,6 +2,9 @@
 namespace ImmediateSolutions\Shipple;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
+use ImmediateSolutions\Shipple\Code\Matcher\DigitsMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\FloatMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\IntegerMatcher;
 use ImmediateSolutions\Shipple\Comparator\MatchComparator;
 use ImmediateSolutions\Shipple\Loader\LoaderInterface;
 use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
@@ -58,6 +61,11 @@ class Application
             $preference->addMatcher('type', new TypeMatcher());
             $preference->addMatcher('choice', new ChoiceMatcher());
             $preference->addMatcher('pattern', new PatternMatcher());
+            $preference->addMatcher('int', new IntegerMatcher());
+            $preference->addMatcher('integer', new IntegerMatcher());
+            $preference->addMatcher('float', new FloatMatcher());
+            $preference->addMatcher('number', new FloatMatcher());
+            $preference->addMatcher('digits', new DigitsMatcher());
 
             $preference->setMismatchResponseFactory(new Error404ResponseFactory());
             $preference->setErrorResponseFactory(new Error500ResponseFactory());

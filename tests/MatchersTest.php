@@ -50,6 +50,18 @@ class MatchersTest extends TestCase
         $result = $interpreter->match("{{ choice: true, 10, false, 19.9, null }}", '10');
 
         Assert::assertFalse($result);
+
+        $result = $interpreter->match("{{ choice: true, 10, 0, [], null }}", false);
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match("{{ choice: true, 10, false, [], null }}", false);
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match("{{ choice: true, 10, false, [], null }}", []);
+
+        Assert::assertTrue($result);
     }
 
     public function testType()
@@ -107,6 +119,10 @@ class MatchersTest extends TestCase
         Assert::assertFalse($result);
 
         $result = $interpreter->match("this is working {{ type: 'text' }}", 'this is working thing');
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match("{{ type: '[]' }}", []);
 
         Assert::assertTrue($result);
 

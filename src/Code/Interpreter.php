@@ -55,7 +55,7 @@ class Interpreter
 
         $result = [];
 
-        if (!preg_match($pattern, $source, $result)) {
+        if (!preg_match($pattern, is_array($source) ? '[]' : $source , $result)) {
             return false;
         }
 
@@ -223,7 +223,7 @@ class Interpreter
         $patterns = [
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(\'(?:\\\\.|[^\'])*\')(?: *,|,|$)/', // text
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?((?:-)?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)(?: *,|,|$)/', // numbers
-            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(true|false|null)(?: *,|,|$)/', // true, false, null
+            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(true|false|null|\[\])(?: *,|,|$)/', // true, false, null, []
         ];
 
 
@@ -256,13 +256,17 @@ class Interpreter
 
         $startedNamed = false;
 
+        $isNamed = function($item){
+            return is_array($item) && count($item) > 0;
+        };
+
         foreach ($parsedCode['arguments'] as $item) {
 
-            if (!is_array($item) && $startedNamed) {
+            if (!$isNamed($item) && $startedNamed) {
                 return null;
             }
 
-            if (is_array($item)) {
+            if ($isNamed($item)) {
                 $startedNamed = true;
                 $arguments['named'][$item[0]] = $item[1];
             } else {
@@ -302,6 +306,10 @@ class Interpreter
 
         if (in_array($value, ['true', 'false'], true)) {
             return $value === 'true';
+        }
+
+        if ($value === '[]') {
+            return [];
         }
 
         if ($value === 'null') {
