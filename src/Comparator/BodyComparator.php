@@ -182,7 +182,15 @@ class BodyComparator extends AbstractComparator
             return [$key];
         }
 
-        return [];
+        $result = [];
+
+        foreach (array_keys($data) as $dataKey) {
+            if ($this->interpreter->match($key, $dataKey)) {
+                $result[] = $dataKey;
+            }
+        }
+
+        return $result;
     }
 
     private function matchValueByMatchedKeys($value, array $data, array $matchedKeys): bool
