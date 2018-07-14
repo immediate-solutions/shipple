@@ -13,7 +13,6 @@ class TypeMatcher implements MatcherInterface
     const TYPE_INT = 'int';
     const TYPE_BOOL = 'bool';
     const TYPE_TEXT = 'text';
-    const TYPE_EMPTY_ARRAY = '[]';
 
     /**
      * @param mixed $value
@@ -28,8 +27,7 @@ class TypeMatcher implements MatcherInterface
             self::TYPE_BOOL,
             self::TYPE_NUMBER,
             self::TYPE_INT,
-            self::TYPE_TEXT,
-            self::TYPE_EMPTY_ARRAY
+            self::TYPE_TEXT
         ];
 
         if (!in_array($type, $availableTypes)) {
@@ -50,10 +48,6 @@ class TypeMatcher implements MatcherInterface
 
         if ($type === self::TYPE_BOOL) {
             return is_bool($value);
-        }
-
-        if ($type === self::TYPE_EMPTY_ARRAY) {
-            return is_array($value) && count($value) === 0;
         }
 
         return false;

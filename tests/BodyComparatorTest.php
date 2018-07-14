@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @author Igor Vorobiov<igor.vorobioff@gmail.com>
  */
-class BodyComparatorTest// extends TestCase
+class BodyComparatorTest extends TestCase
 {
     public function testDefault()
     {
@@ -44,14 +44,14 @@ class BodyComparatorTest// extends TestCase
                 'field1' => 12,
                 'field2' => "data{{ choice: '1', '3', 1 }}",
                 'field3' => [
-                    'field31' => "data{{ choice: true, false }}",
+                    'field31' => "{{ choice: true, false }}",
                     'field32' => [
                         'field321' => null,
                         'field322' => [],
                     ],
-                    'field33' => "some other data{{ pattern: '^[0-9]+$' }} and that is it",
+                    'field33' => "some other data{{ digits }} and that is it",
                 ],
-                'field4' => -99.2,
+                'field4' => "{{ less: 0 }}",
             ]
         ], $request);
 

@@ -5,7 +5,7 @@
 
         "match": {
             "method": "POST",
-            "path": "/users/documents/{{ pattern: '^[0-9]+$' }} ",
+            "path": "/users/documents/{{ pattern: '^[0-9]+$' }} {{ length: from=10, to=11 }} ",
 
             "body": {
                 "{{ choice: 'username', 'email'}}": "admin",
@@ -189,5 +189,5 @@
 
             }
         }
-    },
+    }
 ]

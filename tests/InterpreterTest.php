@@ -177,10 +177,6 @@ class InterpreterTest extends TestCase
 
         Assert::assertEquals('this is my "{{ number: many=10 }" don\'t miss it!', $result);
 
-        $result = $interpreter->interpret('{{dummy: [] }}');
-
-        Assert::assertTrue(is_array($result) && count($result) === 0);
-
         $result = $interpreter->interpret("{{ dummy: 'a'}}{{ dummy: 'b'}}");
 
         Assert::assertEquals('ab', $result);

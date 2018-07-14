@@ -41,7 +41,7 @@ class BodyComparator extends AbstractComparator
             return false;
         }
 
-        $method = 'compare' . preg_replace('/(?:^|-)(.?)/e', "strtoupper('$1')", $contentType);
+        $method = 'compare' . $this->toCamelCase($contentType);
 
         return call_user_func([$this,  $method], $template, $request, $options);
 
@@ -104,7 +104,7 @@ class BodyComparator extends AbstractComparator
 
     private function compareByScope(array $template, array $data, MergedOptions $options): bool
     {
-        $method = 'compareBy'. preg_replace('/(?:^|-)(.?)/e', "strtoupper('$1')", $options->getBodyScope());
+        $method = 'compareBy'. $this->toCamelCase($options->getBodyScope());
 
         return call_user_func([$this, $method], $template, $data);
     }
@@ -231,6 +231,13 @@ class BodyComparator extends AbstractComparator
         }
 
         return true;
+    }
+
+    private function toCamelCase(string $source): string
+    {
+        return preg_replace_callback('/(?:^|-)(.?)/', function($matches) {
+            return strtoupper($matches[1]);
+        }, $source);
     }
 
 }

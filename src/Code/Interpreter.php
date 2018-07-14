@@ -32,6 +32,10 @@ class Interpreter
      */
     public function match($template, $source): bool
     {
+        if (is_array($source)) {
+            return false;
+        }
+
         if (!is_string($template)) {
             return $template === $source;
         }
@@ -235,43 +239,49 @@ class Interpreter
             return null;
         }
 
-        $parsedCode = ['name' => $result[1], 'arguments' => []];
-
         $code = trim(mb_substr($code, mb_strlen($result[0]), -2));
 
+        return ['name' => $result[1], 'arguments' => $this->parseArguments($code)];
+    }
+
+    private function parseArguments(string $code): array
+    {
         $patterns = [
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(\'(?:\\\\.|[^\'])*\')(?: *,|,|$)/', // text
             '/^([a-zA-Z_][a-zA-Z0-9_]*=)?((?:-)?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?)(?: *,|,|$)/', // numbers
-            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(true|false|null|\[\])(?: *,|,|$)/', // true, false, null, []
+            '/^([a-zA-Z_][a-zA-Z0-9_]*=)?(true|false|null)(?: *,|,|$)/', // true, false, null
         ];
 
+        $arguments = [];
+
+        $empty = ['ordered' => [], 'named' => []];
 
         while ($code !== '') {
 
             $result = $this->matchArgument($code, $patterns);
 
             if (!$result || count($result) !== 3) {
-                return null;
+                return $empty;
             } else {
 
                 if ($result[1] === '') {
 
-                    $parsedCode['arguments'][] = $this->cast($result[2]);
+                    $arguments[] = $this->cast($result[2]);
 
                 } elseif ($result[1] !== '') {
 
                     $key = mb_substr($result[1], 0, mb_strlen($result[1]) - 1);
 
-                    $parsedCode['arguments'][] = [$key, $this->cast($result[2])];
+                    $arguments[] = [$key, $this->cast($result[2])];
                 } else {
-                    return null;
+                    return $empty;
                 }
 
                 $code = trim(mb_substr($code, mb_strlen($result[0])));
             }
         }
 
-        $arguments = ['ordered' => [], 'named' => []];
+        $normalizedArguments = $empty;
 
         $startedNamed = false;
 
@@ -279,23 +289,21 @@ class Interpreter
             return is_array($item) && count($item) > 0;
         };
 
-        foreach ($parsedCode['arguments'] as $item) {
+        foreach ($arguments as $item) {
 
             if (!$isNamed($item) && $startedNamed) {
-                return null;
+                return $empty;
             }
 
             if ($isNamed($item)) {
                 $startedNamed = true;
-                $arguments['named'][$item[0]] = $item[1];
+                $normalizedArguments['named'][$item[0]] = $item[1];
             } else {
-                $arguments['ordered'][] = $item;
+                $normalizedArguments['ordered'][] = $item;
             }
         }
 
-        $parsedCode['arguments'] = $arguments;
-
-        return $parsedCode;
+        return $normalizedArguments;
     }
 
     private function matchArgument(string $code, array $patterns): array
@@ -325,10 +333,6 @@ class Interpreter
 
         if (in_array($value, ['true', 'false'], true)) {
             return $value === 'true';
-        }
-
-        if ($value === '[]') {
-            return [];
         }
 
         if ($value === 'null') {

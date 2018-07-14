@@ -8,6 +8,7 @@ use ImmediateSolutions\Shipple\Code\Matcher\DigitsMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\FloatMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\GreaterMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\IntegerMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\LengthMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\LessMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\PatternMatcher;
 use ImmediateSolutions\Shipple\Code\Matcher\TypeMatcher;
@@ -30,10 +31,6 @@ class MatchersTest extends TestCase
         Assert::assertTrue($result);
 
         $result = $interpreter->match("abc{{ pattern: '^[0-9,]+$' }}def", 'abc1,4a,2def');
-
-        Assert::assertFalse($result);
-
-        $result = $interpreter->match("abc{{ pattern: '^[0-9,]+$' }}def", []);
 
         Assert::assertFalse($result);
     }
@@ -60,15 +57,11 @@ class MatchersTest extends TestCase
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("{{ choice: true, 10, 0, [], null }}", false);
+        $result = $interpreter->match("{{ choice: true, 10, 0, null }}", false);
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("{{ choice: true, 10, false, [], null }}", false);
-
-        Assert::assertTrue($result);
-
-        $result = $interpreter->match("{{ choice: true, 10, false, [], null }}", []);
+        $result = $interpreter->match("{{ choice: true, 10, false, null }}", false);
 
         Assert::assertTrue($result);
     }
@@ -130,11 +123,6 @@ class MatchersTest extends TestCase
         $result = $interpreter->match("this is working {{ type: 'text' }}", 'this is working thing');
 
         Assert::assertTrue($result);
-
-        $result = $interpreter->match("{{ type: '[]' }}", []);
-
-        Assert::assertTrue($result);
-
     }
 
     public function testDateTime()
@@ -162,10 +150,6 @@ class MatchersTest extends TestCase
         $result = $interpreter->match("{{ datetime: 24 }}", '2019-01-12 12:00:10');
 
         Assert::assertFalse($result);
-
-        $result = $interpreter->match("{{ datetime: format='d.m.Y' }}", []);
-
-        Assert::assertFalse($result);
     }
 
     public function testDigits()
@@ -187,10 +171,6 @@ class MatchersTest extends TestCase
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("/users/documents/{{ digits:3 }}", []);
-
-        Assert::assertFalse($result);
-
         $result = $interpreter->match("/users/documents/{{ digits:3 }}", '/users/documents/443');
 
         Assert::assertTrue($result);
@@ -200,10 +180,6 @@ class MatchersTest extends TestCase
         Assert::assertFalse($result);
 
         $result = $interpreter->match("/users/documents/{{ digits:3.4 }}", '/users/documents/443');
-
-        Assert::assertFalse($result);
-
-        $result = $interpreter->match("{{ digits }}", []);
 
         Assert::assertFalse($result);
 
@@ -231,10 +207,6 @@ class MatchersTest extends TestCase
             "Here's what you own me 7.4, so don't mess it up with -1");
 
         Assert::assertTrue($result);
-
-        $result = $interpreter->match("{{ float }}", []);
-
-        Assert::assertFalse($result);
 
         $result = $interpreter->match("{{ float }}", 2.1);
 
@@ -269,10 +241,6 @@ class MatchersTest extends TestCase
         $result = $interpreter->match(
             "Here's what you own me {{ int }}, so don't mess it up with {{ int }}",
             "Here's what you own me -1, so don't mess it up with -1.2");
-
-        Assert::assertFalse($result);
-
-        $result = $interpreter->match("{{ int }}", []);
 
         Assert::assertFalse($result);
 
@@ -321,10 +289,6 @@ class MatchersTest extends TestCase
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("{{ greater: 19 }}", []);
-
-        Assert::assertFalse($result);
-
         $result = $interpreter->match("{{ greater: 1 }}", 200);
 
         Assert::assertTrue($result);
@@ -370,10 +334,6 @@ class MatchersTest extends TestCase
 
         Assert::assertFalse($result);
 
-        $result = $interpreter->match("{{ less: 19 }}", []);
-
-        Assert::assertFalse($result);
-
         $result = $interpreter->match("{{ less: 200 }}", 2);
 
         Assert::assertTrue($result);
@@ -383,6 +343,103 @@ class MatchersTest extends TestCase
         Assert::assertTrue($result);
 
         $result = $interpreter->match("{{ less: 1 }}", false);
+
+        Assert::assertFalse($result);
+    }
+
+    public function testLength()
+    {
+        $interpreter = new Interpreter([], [
+            'length' => new LengthMatcher()
+        ]);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: 5}} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: 5}} to be too long",
+            "This text is not go to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: from=-1 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: to=-2 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: 0 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: from=2, to=4 }} to be too long",
+            "This text is not go to be too long");
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: from=2, to=4 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: from=3 }} to be too long",
+            "This text is not go to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: from=3 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: to=3 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: to=3 }} to be too long",
+            "This text is not going to be too long");
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match(
+            "This text is not {{ length: to=3 }} to be too long",
+            "This text is not go to be too long");
+
+        Assert::assertTrue($result);
+
+        $result = $interpreter->match("{{ length: 10 }}", 2);
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match("{{ length: 10 }}", true);
+
+        Assert::assertFalse($result);
+
+        $result = $interpreter->match("{{ length: 10 }}", null);
 
         Assert::assertFalse($result);
     }
