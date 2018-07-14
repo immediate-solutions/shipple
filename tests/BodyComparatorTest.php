@@ -2,6 +2,9 @@
 namespace ImmediateSolutions\Shipple\Tests;
 
 use ImmediateSolutions\Shipple\Code\Interpreter;
+use ImmediateSolutions\Shipple\Code\Matcher\ChoiceMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\DigitsMatcher;
+use ImmediateSolutions\Shipple\Code\Matcher\LessMatcher;
 use ImmediateSolutions\Shipple\Comparator\BodyComparator;
 use ImmediateSolutions\Shipple\Preference;
 use ImmediateSolutions\Shipple\Tests\Mock\Comparator\Request;
@@ -13,9 +16,15 @@ use PHPUnit\Framework\TestCase;
  */
 class BodyComparatorTest extends TestCase
 {
+
+
     public function testDefault()
     {
-        $interpreter = new Interpreter([], []);
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+            'less' => new LessMatcher(),
+            'digits'  => new DigitsMatcher(),
+        ]);
 
         $preference = new Preference();
         $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
@@ -42,6 +51,7 @@ class BodyComparatorTest extends TestCase
         $result = $comparator->compare([
             'body' => [
                 'field1' => 12,
+
                 'field2' => "data{{ choice: '1', '3', 1 }}",
                 'field3' => [
                     'field31' => "{{ choice: true, false }}",

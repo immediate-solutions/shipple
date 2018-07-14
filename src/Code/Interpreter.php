@@ -32,10 +32,6 @@ class Interpreter
      */
     public function match($template, $source): bool
     {
-        if (is_array($source)) {
-            return false;
-        }
-
         if (!is_string($template)) {
             return $template === $source;
         }

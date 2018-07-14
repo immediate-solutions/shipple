@@ -8,9 +8,8 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class HeaderComparator extends AbstractComparator
 {
-
     public function compare(array $match, ServerRequestInterface $request): bool
     {
-        // TODO: Implement compare() method.
+
     }
 }
