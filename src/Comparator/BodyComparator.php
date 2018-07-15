@@ -28,20 +28,20 @@ class BodyComparator extends AbstractComparator
             return true;
         }
 
-        $contentType = $options->getBodyType();
+        $bodyType = $options->getBodyType();
 
-        $contentTypes = [
+        $bodyTypes = [
             Preference::MATCH_BODY_TYPE_JSON,
             Preference::MATCH_BODY_TYPE_FORM,
             Preference::MATCH_BODY_TYPE_TEXT,
             Preference::MATCH_BODY_TYPE_XML
         ];
 
-        if (!in_array($contentType, $contentTypes)) {
+        if (!in_array($bodyType, $bodyTypes)) {
             return false;
         }
 
-        $method = 'compare' . $this->toCamelCase($contentType);
+        $method = 'compare' . $this->toCamelCase($bodyType);
 
         return call_user_func([$this,  $method], $template, $request, $options);
 
@@ -71,6 +71,11 @@ class BodyComparator extends AbstractComparator
             return false;
         }
 
+        return $this->compareItem($template, $data, $options);
+    }
+
+    private function compareItem($template, $data, MergedOptions $options): bool
+    {
         if (!is_array($data)) {
             return $this->interpreter->match($template, $data);
         }
@@ -95,6 +100,20 @@ class BodyComparator extends AbstractComparator
 
     private function compareNormalized(array $template, array $data, MergedOptions $options): bool
     {
+        if ($this->isCollection($template) && !$this->isCollection($data)) {
+            return false;
+        }
+
+        if (!$this->isCollection($template) && $this->isCollection($data)) {
+            return false;
+        }
+
+        if ($this->isCollection($template)) {
+            return $this->compareCollections($template, $data, $options);
+        }
+
+        list($template, $data) = $this->reduceCollections($template, $data, $options);
+
         $template = $this->normalize($template);
 
         $data = $this->normalize($data);
@@ -165,6 +184,107 @@ class BodyComparator extends AbstractComparator
 
         return $result;
 
+    }
+
+    private function reduceCollections(array $template, array $data, MergedOptions $options): array
+    {
+        foreach ($template as $templateKey => $templateValue) {
+
+            if ($this->isCollection($templateValue)) {
+                $matchedKeys = $this->searchMatchedKeys($templateKey, $data);
+
+                foreach ($matchedKeys as $matchedKey) {
+                    if ($this->isCollection($data[$matchedKey])
+                        && $this->compareCollections($templateValue, $data[$matchedKey], $options)) {
+                        $template[$templateKey] = true;
+                        $data[$matchedKey] = true;
+                    }
+                }
+            }
+        }
+
+
+        return [$template, $data];
+    }
+
+    private function compareCollections(array $template, array $data, MergedOptions $options): bool
+    {
+        $method = 'compareCollectionsBy'. $this->toCamelCase($options->getBodyScope());
+
+        return call_user_func([$this, $method], $template, $data, $options);
+    }
+
+    private function compareCollectionsByStrict(array $template, array $data, MergedOptions $options): bool
+    {
+        if (count($template) !== count($data)) {
+            return false;
+        }
+
+        return $this->compareTemplateCollectionsByDataCollections($template, $data, $options);
+    }
+
+    private function compareCollectionsBySoft(array $template, array $data, MergedOptions $options): bool
+    {
+        return $this->compareTemplateCollectionsByDataCollections($template, $data, $options, true);
+    }
+
+    private function compareCollectionsByPartial(array $template, array $data, MergedOptions $options): bool
+    {
+        if (count($template) > count($data)) {
+            return false;
+        }
+
+        return $this->compareTemplateCollectionsByDataCollections($template, $data, $options);
+    }
+
+    private function compareCollectionsByOptional(array $template, array $data, MergedOptions $options): bool
+    {
+        if (count($data) > count($template)) {
+            return false;
+        }
+
+        foreach ($data as $dataItem) {
+            if (!$this->checkDataItemInTemplateCollection($dataItem, $template, $options)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function compareTemplateCollectionsByDataCollections(
+        array $template, array $data, MergedOptions $options, bool $soft = false): bool
+    {
+        foreach ($template as $templateItem) {
+            if (!$this->checkTemplateItemInDataCollection($templateItem, $data, $options)) {
+                return $soft;
+            }
+        }
+
+        return !$soft;
+    }
+
+    private function checkTemplateItemInDataCollection($templateItem, array $data, MergedOptions $options): bool
+    {
+        foreach ($data as $dataItem) {
+            if ($this->compareItem($templateItem, $dataItem, $options)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function checkDataItemInTemplateCollection(
+        $dataItem, array $template, MergedOptions $options): bool
+    {
+        foreach ($template as $templateItem) {
+            if ($this->compareItem($templateItem, $dataItem, $options)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function normalize(array $data): array
@@ -248,4 +368,23 @@ class BodyComparator extends AbstractComparator
         }, $source);
     }
 
+
+    private function isCollection($data) : bool
+    {
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $counter = 0;
+
+        foreach (array_keys($data) as $key) {
+            if ($key !== $counter) {
+                return false;
+            }
+
+            $counter ++;
+        }
+
+        return true;
+    }
 }

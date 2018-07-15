@@ -304,4 +304,295 @@ class BodyComparatorTest extends TestCase
         Assert::assertTrue($result);
     }
 
+    public function testCollectionStrict()
+    {
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+            'less' => new LessMatcher(),
+            'digits'  => new DigitsMatcher(),
+        ]);
+
+        $preference = new Preference();
+        $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
+
+        $comparator = new BodyComparator($interpreter, $preference);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => [
+                    [
+                        'field12' => 'a',
+                    ],
+                    [
+                        'field12' => 'b',
+                    ],
+                    [
+                        'field12' => 'c',
+                    ]
+                ]
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field{{ digits }}' => [
+                    [
+                        'field12' => "{{ choice: 'a', 'x', 'y'}}",
+                    ],
+                    [
+                        'field12' => 'c',
+                    ],
+                    [
+                        'field12' => 'b',
+                    ]
+                ],
+            ],
+        ], $request);
+
+        Assert::assertTrue($result);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => ['a', 'b', 'c']
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field{{ digits }}' => ["{{ choice: 'a', 'x', 'y'}}", 'c', 'b'],
+            ],
+        ], $request);
+
+        Assert::assertTrue($result);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => [
+                    [
+                        'field12' => 'a',
+                    ],
+                    [
+                        'field12' => 'b',
+                    ],
+                    [
+                        'field12' => 'c',
+                        'field13' => 2
+                    ]
+                ]
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field{{ digits }}' => [
+                    [
+                        'field12' => 'a',
+                    ],
+                    [
+                        'field12' => 'c',
+                    ],
+                    [
+                        'field12' => 'b',
+                    ]
+                ],
+            ],
+        ], $request);
+
+        Assert::assertFalse($result);
+    }
+
+    public function testCollectionPartial()
+    {
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+            'less' => new LessMatcher(),
+            'digits'  => new DigitsMatcher(),
+        ]);
+
+        $preference = new Preference();
+        $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
+
+        $comparator = new BodyComparator($interpreter, $preference);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => [
+                    [
+                        'field12' => 'a',
+                    ],
+                    [
+                        'field12' => 'c',
+                    ],
+                    [
+                        'field12' => [
+                            'field121' => true,
+                            'field122' => [
+                                'field1221' => null,
+                            ]
+                        ],
+                    ]
+                ]
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field{{ digits }}' => [
+                    [
+                        'field12' => "{{ choice: 'a', 'x', 'y'}}",
+                    ],
+                    [
+                        'field{{ digits: 2 }}' => 'c',
+                    ]
+                ],
+            ],
+            'options' => [
+                'body' => [
+                    'scope' => 'partial'
+                ]
+            ]
+        ], $request);
+
+        Assert::assertTrue($result);
+
+        $request = new Request([
+            'body' => json_encode(['a', [
+                    'field12' => [
+                        'field121' => true,
+                        'field122' => [
+                            'field1221' => null,
+                        ]
+                    ],
+                ], 'b'])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => ["{{ choice: 'a', 'x', 'y'}}", 'b'],
+            'options' => [
+                'body' => [
+                    'scope' => 'partial'
+                ]
+            ]
+        ], $request);
+
+        Assert::assertTrue($result);
+    }
+
+    public function testCollectionSoft()
+    {
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+            'less' => new LessMatcher(),
+            'digits'  => new DigitsMatcher(),
+        ]);
+
+        $preference = new Preference();
+        $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
+
+        $comparator = new BodyComparator($interpreter, $preference);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => [
+                    [
+                        'field12' => 'a',
+                    ],
+                    [
+                        'field12' => 'b',
+                    ],
+                    [
+                        'field12' => 'c',
+                    ]
+                ]
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field1' => [
+                    [
+                        'field12' => [
+                            'field121' => null,
+                            'field122' => 'hello world',
+                        ],
+                    ],
+                    [
+                        'field12' => 'c',
+                        'field13' => 'b'
+                    ],
+                    [
+                        'field12' => true,
+                    ]
+                ],
+                'field3' => 'this is {{ length: 10 }}'
+            ],
+            'options' => [
+                'body' => [
+                    'scope' => 'soft'
+                ]
+            ]
+        ], $request);
+
+        Assert::assertTrue($result);
+    }
+
+
+    public function testCollectionOptional()
+    {
+        $interpreter = new Interpreter([], [
+            'choice' => new ChoiceMatcher(),
+            'less' => new LessMatcher(),
+            'digits'  => new DigitsMatcher(),
+        ]);
+
+        $preference = new Preference();
+        $preference->setMatchBodyType(Preference::MATCH_BODY_TYPE_JSON);
+
+        $comparator = new BodyComparator($interpreter, $preference);
+
+        $request = new Request([
+            'body' => json_encode([
+                'field1' => [
+                    [
+                        'field14' => 'a',
+                    ],
+                    [
+                        'field13' => 'b',
+                    ],
+                    [
+                        'field12' => 'c',
+                    ]
+                ]
+            ])
+        ]);
+
+        $result = $comparator->compare([
+            'body' => [
+                'field1' => [
+                    [
+                        'field12' => [
+                            'field121' => null,
+                            'field122' => 'hello world',
+                        ],
+                    ],
+                    [
+                        'field12' => 'c',
+                        'field13' => 'b',
+                        'field14' => 'a',
+                    ],
+                    [
+                        'field12' => true,
+                    ]
+                ],
+                'field3' => 'this is {{ length: 10 }}'
+            ],
+            'options' => [
+                'body' => [
+                    'scope' => 'optional'
+                ]
+            ]
+        ], $request);
+
+        Assert::assertTrue($result);
+    }
 }
